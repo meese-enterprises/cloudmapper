@@ -11,7 +11,7 @@ import yaml
 import pyjq
 import urllib.parse
 from botocore.exceptions import ClientError, EndpointConnectionError, NoCredentialsError
-from shared.common import get_account, custom_serializer
+from shared.common import custom_serializer, get_account, get_default_region
 from botocore.config import Config
 
 __description__ = "Run AWS API calls to collect data from the account"
@@ -223,13 +223,7 @@ def collect(arguments):
     make_directory("account-data/{}".format(account_dir))
 
     # Identify the default region used by global services such as IAM
-    default_region = os.environ.get("AWS_REGION", "us-east-1")
-    if "gov-" in default_region:
-        default_region = "us-gov-west-1"
-    elif "cn-" in default_region:
-        default_region = "cn-north-1"
-    else:
-        default_region = "us-east-1"
+    default_region = get_default_region()
 
     regions_filter = None
     if len(arguments.regions_filter) > 0:

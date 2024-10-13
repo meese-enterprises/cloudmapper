@@ -1,11 +1,12 @@
 from __future__ import print_function
-import argparse
-import json
-import datetime
-import pyjq
-import yaml
-import sys
 from netaddr import IPNetwork
+import argparse
+import datetime
+import json
+import os
+import pyjq
+import sys
+import yaml
 
 from shared.nodes import Account, Region
 from shared.query import query_aws, get_parameter_file
@@ -152,11 +153,25 @@ def is_unblockable_cidr(cidr):
     return False
 
 
+def get_default_region():
+    default_region = os.environ.get("AWS_REGION", "us-east-1")
+    if "gov-" in default_region:
+        return "us-gov-west-1"
+    elif "cn-" in default_region:
+        return "cn-north-1"
+    else:
+        return "us-east-1"
+
+
 def get_regions(account, outputfilter={}):
     # aws ec2 describe-regions
     region_data = query_aws(account, "describe-regions")
+
+    # Fallback to default region if no region data is found
     if not region_data:
-        raise InvalidAccountData("region data not found for {}".format(account.name))
+        default_region = get_default_region()
+        log_warning(f"No region data found for account {account.name}. Falling back to default region: {default_region}")
+        return [{"RegionName": default_region}]
 
     region_filter = ""
     if "regions" in outputfilter:

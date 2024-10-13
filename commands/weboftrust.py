@@ -198,6 +198,7 @@ def get_iam_trusts(account, nodes, connections, connections_to_get):
                         # Validate that the federated principal and the SAML provider is coming from known accounts.
                         # WoT will show us the direction of that trust for further inspection.
                         # this enables cross_account_admin_sts (STS between accounts)
+                        saml_provider_arn = ""
                         for saml in saml_providers:
                             if saml["Arn"] == federated_principal:
                                 saml_provider_arn = saml["Arn"]
@@ -296,7 +297,7 @@ def get_iam_trusts(account, nodes, connections, connections_to_get):
                                 }
                             )
                             continue
-                        else:
+                        elif saml_provider_arn != "":
                             raise Exception(
                                 "Unknown federation provider: {}".format(
                                     saml_provider_arn.lower()
