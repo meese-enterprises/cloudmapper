@@ -403,8 +403,6 @@ def iam_report(accounts, config, args):
             json_account_auth_details = query_aws(
                 region.account, "iam-get-account-authorization-details", region
             )
-            print(f"[IAM] Retrieved account authorization details for {region.account.name} in {region.name}")
-            print(f"[IAM] json_account_auth_details: {json_account_auth_details}")
             get_access_advisor(region, principal_stats, json_account_auth_details, args)
 
     users = []
