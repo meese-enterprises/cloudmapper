@@ -388,6 +388,8 @@ def get_access_advisor_active_counts(account, max_age=90):
     json_account_auth_details = query_aws(
         region.account, "iam-get-account-authorization-details", region
     )
+    log_debug(f"Retrieved account authorization details for {region.account.name} in {region.name}")
+    log_debug(f"json_account_auth_details: {json_account_auth_details}")
 
     account_stats = {
         "users": {"active": 0, "inactive": 0},
