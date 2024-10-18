@@ -674,7 +674,10 @@ def prepare(account, config, outputfilter):
             filtered_cytoscape_json.append(filtered_node)
         cytoscape_json = filtered_cytoscape_json
     with open("web/data.json", "w") as outfile:
-        json.dump(cytoscape_json, outfile, indent=4)
+        if outputfilter.get("readable", False):
+            json.dump(cytoscape_json, outfile, indent=4)
+        else:
+            json.dump(cytoscape_json, outfile)
 
 
 def run(arguments):
@@ -789,6 +792,11 @@ def run(arguments):
         dest="node_data",
         action="store_false",
     )
+    parser.add_argument(
+        "--readable",
+        help="Output readable JSON with indentation",
+        action="store_true"
+    )
     parser.set_defaults(internal_edges=True)
     parser.set_defaults(inter_rds_edges=False)
     parser.set_defaults(read_replicas=True)
@@ -822,6 +830,7 @@ def run(arguments):
     outputfilter["collapse_by_tag"] = args.collapse_by_tag
     outputfilter["collapse_asgs"] = args.collapse_asgs
     outputfilter["node_data"] = args.node_data
+    outputfilter["readable"] = args.readable
 
     # Read accounts file
     try:
