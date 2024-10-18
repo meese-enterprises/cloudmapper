@@ -1,10 +1,8 @@
 CloudMapper
 ========
 
-**Note** the Network Visualization functionality (command `prepare`) is no longer maintained.
-
-CloudMapper helps you analyze your Amazon Web Services (AWS) environments. 
-The original purpose was to generate network diagrams and display them in your browser (functionality no longer maintained). 
+CloudMapper helps you analyze your Amazon Web Services (AWS) environments.
+The original purpose was to generate network diagrams and display them in your browser.
 It now contains much more functionality, including auditing for security issues.
 
 - [Network mapping demo](https://duo-labs.github.io/cloudmapper/)
@@ -49,12 +47,13 @@ If you want to add your own private commands, you can create a `private_commands
 ## Installation
 
 Requirements:
-- python 3 (3.7.0rc1 is known to work), `pip`, and `virtualenv`
+- python 3 (3.10 is known to work), `pip`, and `virtualenv`
+  - Can install with [pyenv](https://github.com/pyenv/pyenv): `pyenv install 3.10` and `pyenv local 3.10`
 - You will also need `jq` (https://stedolan.github.io/jq/) and the library `pyjq` (https://github.com/doloopwhile/pyjq), which require some additional tools installed that will be shown.
 
 On macOS:
 
-```
+```sh
 # clone the repo
 git clone https://github.com/duo-labs/cloudmapper.git
 # Install pre-reqs for pyjq
@@ -65,14 +64,15 @@ pip install --prefer-binary -r requirements.txt
 ```
 
 On Linux:
-```
+
+```sh
 # clone the repo
 git clone https://github.com/duo-labs/cloudmapper.git
 # (AWS Linux, Centos, Fedora, RedHat etc.):
 # sudo yum install autoconf automake libtool python3-devel.x86_64 python3-tkinter python-pip jq awscli
 # (Debian, Ubuntu etc.):
 # You may additionally need "build-essential"
-sudo apt-get install autoconf automake libtool python3.7-dev python3-tk jq awscli
+sudo apt-get install autoconf automake libtool python3.10-dev python3-tk jq awscli
 cd cloudmapper/
 python3 -m venv ./venv && source venv/bin/activate
 pip install -r requirements.txt
@@ -81,9 +81,9 @@ pip install -r requirements.txt
 
 ## Run with demo data
 
-A small set of demo data is provided.  This will display the same environment as the demo site https://duo-labs.github.io/cloudmapper/ 
+A small set of demo data is provided.  This will display the same environment as the demo site https://duo-labs.github.io/cloudmapper/
 
-```
+```sh
 # Generate the data for the network map
 python cloudmapper.py prepare --config config.json.demo --account demo
 # Generate a report
@@ -121,14 +121,14 @@ You must have the following privileges (these grant various read access of metad
 
 Collecting the data is done as follows:
 
-```
+```sh
 python cloudmapper.py collect --account my_account
 ```
 
 ## Analyze the data
 From here, try running the different commands, such as:
 
-```
+```sh
 python cloudmapper.py report --account my_account
 python cloudmapper.py webserver
 ```
@@ -142,7 +142,7 @@ Then view the report in your browser at 127.0.0.1:8000/account-data/report.html
 ### Generating a config file
 Instead of modifying `config.json` directly, there is a command to configure the data there, in case that is needed:
 
-```
+```sh
 python cloudmapper.py configure {add-account|remove-account} --config-file CONFIG_FILE --name NAME --id ID [--default DEFAULT]
 python cloudmapper.py configure {add-cidr|remove-cidr} --config-file CONFIG_FILE --cidr CIDR --name NAME
 ```
@@ -151,7 +151,7 @@ This will allow you to define the different AWS accounts you use in your environ
 
 If you use [AWS Organizations](https://aws.amazon.com/organizations/), you can also automatically add organization member accounts to `config.json` using:
 
-```
+```sh
 python cloudmapper.py configure discover-organization-accounts
 ```
 
@@ -163,17 +163,17 @@ You may find that you don't care about some of audit items. You may want to igno
 
 
 # Using a Docker container
-The docker container that is created is meant to be used interactively. 
+The docker container that is created is meant to be used interactively.
 
-```
+```sh
 docker build -t cloudmapper .
 ```
 
-Cloudmapper needs to make IAM calls and cannot use session credentials for collection, so you cannot use the aws-vault server if you want to collect data, and must pass role credentials in directly or configure aws credentials manually inside the container. *The following code exposes your raw credentials inside the container.* 
+Cloudmapper needs to make IAM calls and cannot use session credentials for collection, so you cannot use the aws-vault server if you want to collect data, and must pass role credentials in directly or configure aws credentials manually inside the container. *The following code exposes your raw credentials inside the container.*
 
-```
-(                                                              
-    export $(aws-vault exec YOUR_PROFILE --no-session -- env | grep ^AWS | xargs) && \ 
+```sh
+(
+    export $(aws-vault exec YOUR_PROFILE --no-session -- env | grep ^AWS | xargs) && \
     docker run -ti \
         -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
         -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
@@ -184,7 +184,7 @@ Cloudmapper needs to make IAM calls and cannot use session credentials for colle
 
 This will drop you into the container. Run `aws sts get-caller-identity` to confirm this was setup correctly. Cloudmapper demo data is not copied into the docker container so you will need to collect live data from your system. Note docker defaults may limit the memory available to your container. For example on Mac OS the default is 2GB which may not be enough to generate the report on a medium sized account.
 
-```
+```sh
 python cloudmapper.py configure add-account --config-file config.json --name YOUR_ACCOUNT --id YOUR_ACCOUNT_NUMBER
 python cloudmapper.py collect --account YOUR_ACCOUNT
 python cloudmapper.py report --account YOUR_ACCOUNT
