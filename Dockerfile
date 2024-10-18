@@ -1,4 +1,4 @@
-FROM python:3.12-slim as cloudmapper
+FROM python:3.10-slim as cloudmapper
 
 LABEL maintainer="https://github.com/ajmeese7/"
 LABEL Project="https://github.com/meese-enterprises/cloudmapper"

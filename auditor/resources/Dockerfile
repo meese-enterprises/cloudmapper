@@ -1,4 +1,4 @@
-FROM python:3.12-slim as cloudmapper
+FROM python:3.10-slim as cloudmapper
 
 LABEL maintainer="https://github.com/ajmeese7/"
 LABEL Project="https://github.com/meese-enterprises/cloudmapper"
@@ -7,7 +7,7 @@ WORKDIR /opt/cloudmapper
 ENV AWS_DEFAULT_REGION=us-east-1
 
 RUN apt-get update -y
-RUN apt-get install -y build-essential autoconf automake libtool python3.12-dev python3-tk jq awscli
+RUN apt-get install -y build-essential autoconf automake libtool python3.10-dev python3-tk jq awscli
 
 COPY cloudmapper/. /opt/cloudmapper
 COPY entrypoint.sh /opt/cloudmapper/entrypoint.sh
