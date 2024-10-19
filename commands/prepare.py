@@ -246,17 +246,18 @@ def get_connections(cidrs, vpc, outputfilter):
 
             else:
                 # This is an external IP (ie. not in a private range).
-                for instance in sg_to_instance_mapping.get(sg["GroupId"], {}):
-                    # Ensure it has a public IP, as resources with only private IPs can't be reached
-                    if instance.is_public:
-                        cidrs[cidr].is_used = True
-                        add_connection(connections, cidrs[cidr], instance, sg)
-                    else:
-                        if cidr == "0.0.0.0/0":
-                            # Resource is not public, but allows anything to access it,
-                            # so mark set all the resources in the VPC as allowing access to it.
-                            for source_instance in vpc.leaves:
-                                add_connection(connections, source_instance, instance, sg)
+                if outputfilter.get("external_edges", True):
+                    for instance in sg_to_instance_mapping.get(sg["GroupId"], {}):
+                        # Ensure it has a public IP, as resources with only private IPs can't be reached
+                        if instance.is_public:
+                            cidrs[cidr].is_used = True
+                            add_connection(connections, cidrs[cidr], instance, sg)
+                        else:
+                            if cidr == "0.0.0.0/0":
+                                # Resource is not public, but allows anything to access it,
+                                # so mark set all the resources in the VPC as allowing access to it.
+                                for source_instance in vpc.leaves:
+                                    add_connection(connections, source_instance, instance, sg)
 
         if outputfilter.get("internal_edges", True):
             # Connect allowed in Security Groups
@@ -685,6 +686,11 @@ def run(arguments):
       dest="internal_edges",
       action="store_false"
     )
+    parser.add_argument(
+      "--no-external-edges",
+      help="Exclude connections to external CIDRs",
+      dest="external_edges",
+      action="store_false"
     )
     parser.add_argument(
       "--inter-rds-edges",
@@ -729,6 +735,7 @@ def run(arguments):
       action="store_true"
     )
     parser.set_defaults(internal_edges=True)
+    parser.set_defaults(external_edges=True)
     parser.set_defaults(inter_rds_edges=False)
     parser.set_defaults(read_replicas=True)
     parser.set_defaults(azs=True)
@@ -755,6 +762,7 @@ def run(arguments):
         outputfilter["tags"] = args.tags
 
     outputfilter["internal_edges"] = args.internal_edges
+    outputfilter["external_edges"] = args.external_edges
     outputfilter["read_replicas"] = args.read_replicas
     outputfilter["inter_rds_edges"] = args.inter_rds_edges
     outputfilter["azs"] = args.azs
