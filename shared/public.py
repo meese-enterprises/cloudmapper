@@ -77,13 +77,13 @@ def get_public_nodes(account, config, use_cache=False):
 
     # Get the data from the `prepare` command
     outputfilter = {
-        "internal_edges": False,
-        "read_replicas": False,
-        "inter_rds_edges": False,
-        "azs": False,
-        "collapse_by_tag": None,
-        "collapse_asgs": True,
-        "mute": True,
+      "internal_edges": False,
+      "read_replicas": False,
+      "inter_rds_edges": False,
+      "azs": False,
+      "collapse_by_tag": None,
+      "collapse_asgs": True,
+      "mute": True
     }
     network = build_data_structure(account, config, outputfilter)
 
@@ -92,13 +92,13 @@ def get_public_nodes(account, config, use_cache=False):
 
     # Look at all the edges for ones connected to the public Internet (0.0.0.0/0)
     for edge in pyjq.all(
-        '.[].data|select(.type=="edge")|select(.source=="0.0.0.0/0")', network
+      '.[].data|select(.type=="edge")|select(.source=="0.0.0.0/0")', network
     ):
 
         # Find the node at the other end of this edge
         target = {"arn": edge["target"], "account": account["name"]}
         target_node = pyjq.first(
-            '.[].data|select(.id=="{}")'.format(target["arn"]), network, {}
+          '.[].data|select(.id=="{}")'.format(target["arn"]), network, {}
         )
 
         # Depending on the type of node, identify what the IP or hostname is
@@ -120,7 +120,7 @@ def get_public_nodes(account, config, use_cache=False):
             target["type"] = "ec2"
             dns_name = target_node["node_data"].get("PublicDnsName", "")
             target["hostname"] = target_node["node_data"].get(
-                "PublicIpAddress", dns_name
+              "PublicIpAddress", dns_name
             )
             target["tags"] = target_node["node_data"].get("Tags", [])
         elif target_node["type"] == "ecs":
@@ -132,7 +132,7 @@ def get_public_nodes(account, config, use_cache=False):
         elif target_node["type"] == "redshift":
             target["type"] = "redshift"
             target["hostname"] = (
-                target_node["node_data"].get("Endpoint", {}).get("Address", "")
+              target_node["node_data"].get("Endpoint", {}).get("Address", "")
             )
         else:
             # Unknown node
@@ -142,14 +142,14 @@ def get_public_nodes(account, config, use_cache=False):
         ingress = pyjq.all(".[]", edge.get("node_data", {}))
 
         sg_group_allowing_all_protocols = pyjq.first(
-            '.[]|select(.IpPermissions[]?|.IpProtocol=="-1")|.GroupId', ingress, None
+          '.[]|select(.IpPermissions[]?|.IpProtocol=="-1")|.GroupId', ingress, None
         )
         public_sgs = {}
         if sg_group_allowing_all_protocols is not None:
             warnings.append(
-                "All protocols allowed access to {} due to {}".format(
-                    target, sg_group_allowing_all_protocols
-                )
+              "All protocols allowed access to {} due to {}".format(
+                target, sg_group_allowing_all_protocols
+              )
             )
             # I would need to redo this code in order to get the name of the security group
             public_sgs[sg_group_allowing_all_protocols] = {"public_ports": "0-65535"}
@@ -163,16 +163,16 @@ def get_public_nodes(account, config, use_cache=False):
             for ip_permission in sg.get("IpPermissions", []):
                 selection = 'select((.IpProtocol=="tcp") or (.IpProtocol=="udp")) | select(.IpRanges[].CidrIp=="0.0.0.0/0")'
                 sg_port_ranges.extend(
-                    pyjq.all("{}| [.FromPort,.ToPort]".format(selection), ip_permission)
+                  pyjq.all("{}| [.FromPort,.ToPort]".format(selection), ip_permission)
                 )
                 selection = 'select(.IpProtocol=="-1") | select(.IpRanges[].CidrIp=="0.0.0.0/0")'
                 sg_port_ranges.extend(
-                    pyjq.all("{}| [0,65535]".format(selection), ip_permission)
+                  pyjq.all("{}| [0,65535]".format(selection), ip_permission)
                 )
             public_sgs[sg["GroupId"]] = {
-                "GroupId": sg["GroupId"],
-                "GroupName": sg["GroupName"],
-                "public_ports": port_ranges_string(regroup_ranges(sg_port_ranges)),
+              "GroupId": sg["GroupId"],
+              "GroupName": sg["GroupName"],
+              "public_ports": port_ranges_string(regroup_ranges(sg_port_ranges))
             }
             port_ranges.extend(sg_port_ranges)
         range_string = port_ranges_string(regroup_ranges(port_ranges))
@@ -182,17 +182,17 @@ def get_public_nodes(account, config, use_cache=False):
         if target["ports"] == "":
             issue_msg = "No ports open for tcp or udp (probably can only be pinged). Rules that are not tcp or udp: {} -- {}"
             warnings.append(
-                issue_msg.format(
-                    json.dumps(
-                        pyjq.all(
-                            '.[]|select((.IpProtocol!="tcp") and (.IpProtocol!="udp"))'.format(
-                                selection
-                            ),
-                            ingress,
-                        )
+              issue_msg.format(
+                json.dumps(
+                  pyjq.all(
+                    '.[]|select((.IpProtocol!="tcp") and (.IpProtocol!="udp"))'.format(
+                      selection
                     ),
-                    account,
-                )
+                    ingress
+                  )
+                ),
+                account
+              )
             )
         public_nodes.append(target)
 
@@ -216,9 +216,7 @@ def get_public_nodes(account, config, use_cache=False):
         region = Region(account, region_json)
         # Look for CloudFront
         if region.name == "us-east-1":
-            json_blob = query_aws(
-                region.account, "cloudfront-list-distributions", region
-            )
+            json_blob = query_aws(region.account, "cloudfront-list-distributions", region)
 
             for distribution in json_blob.get("DistributionList", {}).get("Items", []):
                 if not distribution["Enabled"]:
@@ -238,7 +236,7 @@ def get_public_nodes(account, config, use_cache=False):
                 target = {"arn": api["id"], "account": account.name}
                 target["type"] = "apigateway"
                 target["hostname"] = "{}.execute-api.{}.amazonaws.com".format(
-                    api["id"], region.name
+                  api["id"], region.name
                 )
                 target["ports"] = "80,443"
 

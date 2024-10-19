@@ -150,9 +150,7 @@ def report(accounts, config, args):
                 if n > 0:
                     if region.name not in region_stats_tooltip[account.name]:
                         region_stats_tooltip[account.name][region.name] = ""
-                    region_stats_tooltip[account.name][
-                        region.name
-                    ] += "{}:{}<br>".format(resource_name, n)
+                    region_stats_tooltip[account.name][region.name] += "{}:{}<br>".format(resource_name, n)
 
             if count > 0:
                 has_resources = "Y"
@@ -176,14 +174,14 @@ def report(accounts, config, args):
         resource_counts = []
         for account_name in t["account_names"]:
             resource_counts.append(
-                sum(account_stats[account_name][resource_name].values())
+              sum(account_stats[account_name][resource_name].values())
             )
 
         resource_data = {
-            "label": resource_name,
-            "data": resource_counts,
-            "backgroundColor": COLOR_PALETTE[color_index],
-            "borderWidth": 1,
+          "label": resource_name,
+          "data": resource_counts,
+          "backgroundColor": COLOR_PALETTE[color_index],
+          "borderWidth": 1
         }
         t["resource_data_set"].append(resource_data)
 
@@ -192,34 +190,34 @@ def report(accounts, config, args):
     # Get IAM access dat
     print("* Getting IAM data")
     t["iam_active_data_set"] = [
-        {
-            "label": "Active users",
-            "stack": "users",
-            "data": [],
-            "backgroundColor": "rgb(162, 203, 249)",
-            "borderWidth": 1,
-        },
-        {
-            "label": "Inactive users",
-            "stack": "users",
-            "data": [],
-            "backgroundColor": INACTIVE_COLOR,
-            "borderWidth": 1,
-        },
-        {
-            "label": "Active roles",
-            "stack": "roles",
-            "data": [],
-            "backgroundColor": ACTIVE_COLOR,
-            "borderWidth": 1,
-        },
-        {
-            "label": "Inactive roles",
-            "stack": "roles",
-            "data": [],
-            "backgroundColor": INACTIVE_COLOR,
-            "borderWidth": 1,
-        },
+      {
+        "label": "Active users",
+        "stack": "users",
+        "data": [],
+        "backgroundColor": "rgb(162, 203, 249)",
+        "borderWidth": 1
+      },
+      {
+        "label": "Inactive users",
+        "stack": "users",
+        "data": [],
+        "backgroundColor": INACTIVE_COLOR,
+        "borderWidth": 1
+      },
+      {
+        "label": "Active roles",
+        "stack": "roles",
+        "data": [],
+        "backgroundColor": ACTIVE_COLOR,
+        "borderWidth": 1
+      },
+      {
+        "label": "Inactive roles",
+        "stack": "roles",
+        "data": [],
+        "backgroundColor": INACTIVE_COLOR,
+        "borderWidth": 1
+      }
     ]
 
     for account in accounts:
@@ -237,15 +235,15 @@ def report(accounts, config, args):
     print("* Getting public resource data")
     # TODO Need to cache this data as this can take a long time
     t["public_network_resource_type_names"] = [
-        "ec2",
-        "elb",
-        "elbv2",
-        "rds",
-        "redshift",
-        "ecs",
-        "autoscaling",
-        "cloudfront",
-        "apigateway",
+      "ec2",
+      "elb",
+      "elbv2",
+      "rds",
+      "redshift",
+      "ecs",
+      "autoscaling",
+      "cloudfront",
+      "apigateway"
     ]
     t["public_network_resource_types"] = {}
 
@@ -265,20 +263,18 @@ def report(accounts, config, args):
 
         for public_node in public_nodes:
             if public_node["type"] in t["public_network_resource_type_names"]:
-                t["public_network_resource_types"][account["name"]][
-                    public_node["type"]
-                ] += 1
+                t["public_network_resource_types"][account["name"]][public_node["type"]] += 1
             else:
                 raise Exception(
-                    "Unknown type {} of public node".format(public_node["type"])
+                  "Unknown type {} of public node".format(public_node["type"])
                 )
 
             if public_node["ports"] not in t["public_ports"]:
                 t["public_ports"].append(public_node["ports"])
 
             t["account_public_ports"][account["name"]][public_node["ports"]] = (
-                t["account_public_ports"][account["name"]].get(public_node["ports"], 0)
-                + 1
+              t["account_public_ports"][account["name"]].get(public_node["ports"], 0)
+              + 1
             )
 
     # Pass data for the public port chart
@@ -294,10 +290,10 @@ def report(accounts, config, args):
             ports = "ICMP only"
 
         port_data = {
-            "label": ports,
-            "data": port_counts,
-            "backgroundColor": COLOR_PALETTE[color_index],
-            "borderWidth": 1,
+          "label": ports,
+          "data": port_counts,
+          "backgroundColor": COLOR_PALETTE[color_index],
+          "borderWidth": 1
         }
         t["public_ports_data_set"].append(port_data)
 
@@ -331,28 +327,24 @@ def report(accounts, config, args):
         for finding in [f for f in findings if f.account_name == account["name"]]:
             conf = audit_config[finding.issue_id]
 
-            count = findings_severity_by_account[finding.account_name][
-                conf["severity"]
-            ].get(finding.issue_id, 0)
-            findings_severity_by_account[finding.account_name][conf["severity"]][
-                finding.issue_id
-            ] = (count + 1)
+            count = findings_severity_by_account[finding.account_name][conf["severity"]].get(finding.issue_id, 0)
+            findings_severity_by_account[finding.account_name][conf["severity"]][finding.issue_id] = (count + 1)
 
     t["findings_severity_by_account_chart"] = []
     for severity in SEVERITIES:
         severity_counts_by_account = []
         for _ in accounts:
             severity_counts_by_account.append(
-                len(findings_severity_by_account[_["name"]][severity["name"]])
+              len(findings_severity_by_account[_["name"]][severity["name"]])
             )
 
         t["findings_severity_by_account_chart"].append(
-            {
-                "label": severity["name"],
-                "data": severity_counts_by_account,
-                "backgroundColor": severity["color"],
-                "borderWidth": 1,
-            }
+          {
+            "label": severity["name"],
+            "data": severity_counts_by_account,
+            "backgroundColor": severity["color"],
+            "borderWidth": 1
+          }
         )
 
     # Create list by severity
@@ -363,8 +355,8 @@ def report(accounts, config, args):
         conf = audit_config[finding.issue_id]
 
         t["severities"][conf["severity"]][finding.issue_id] = {
-            "title": conf["title"],
-            "id": finding.issue_id,
+          "title": conf["title"],
+          "id": finding.issue_id
         }
 
     # Create chart for finding counts
@@ -379,18 +371,16 @@ def report(accounts, config, args):
         for account in accounts:
             count = 0
             for severity in findings_severity_by_account[account["name"]]:
-                count += findings_severity_by_account[account["name"]][severity].get(
-                    finding_type, 0
-                )
+                count += findings_severity_by_account[account["name"]][severity].get(finding_type, 0)
             finding_counts.append(count)
 
         t["finding_counts_by_account_chart"].append(
-            {
-                "label": finding_type,
-                "data": finding_counts,
-                "backgroundColor": COLOR_PALETTE[color_index],
-                "borderWidth": 1,
-            }
+          {
+            "label": finding_type,
+            "data": finding_counts,
+            "backgroundColor": COLOR_PALETTE[color_index],
+            "borderWidth": 1
+          }
         )
 
         color_index = (color_index + 1) % len(COLOR_PALETTE)
@@ -406,29 +396,29 @@ def report(accounts, config, args):
                 break
 
         issue = group.get(
-            finding.issue_id,
-            {
-                "title": conf["title"],
-                "description": conf.get("description", ""),
-                "severity": conf["severity"],
-                "severity_color": severity["color"],
-                "is_global": conf.get("is_global", False),
-                "accounts": {},
-            },
+          finding.issue_id,
+          {
+            "title": conf["title"],
+            "description": conf.get("description", ""),
+            "severity": conf["severity"],
+            "severity_color": severity["color"],
+            "is_global": conf.get("is_global", False),
+            "accounts": {}
+          },
         )
 
         account_hits = issue["accounts"].get(
-            finding.region.account.local_id,
-            {"account_name": finding.region.account.name, "regions": {}},
+          finding.region.account.local_id,
+          {"account_name": finding.region.account.name, "regions": {}}
         )
 
         region_hits = account_hits["regions"].get(finding.region.name, {"hits": []})
 
         region_hits["hits"].append(
-            {
-                "resource": finding.resource_id,
-                "details": json.dumps(finding.resource_details, indent=4),
-            }
+          {
+            "resource": finding.resource_id,
+            "details": json.dumps(finding.resource_details, indent=4)
+          }
         )
 
         account_hits["regions"][finding.region.name] = region_hits
@@ -447,28 +437,28 @@ def report(accounts, config, args):
 def run(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--max-age",
-        help="Number of days a user or role hasn't been used before it's marked inactive",
-        default=90,
-        type=int,
+      "--max-age",
+      help="Number of days a user or role hasn't been used before it's marked inactive",
+      default=90,
+      type=int
     )
     parser.add_argument(
-        "--output-file",
-        help="Path to write report output to",
-        default=REPORT_OUTPUT_FILE,
+      "--output-file",
+      help="Path to write report output to",
+      default=REPORT_OUTPUT_FILE
     )
     parser.add_argument(
-        "--stats_all_resources",
-        help="Show stats for all resource types",
-        action="store_true",
-        default=False,
-        dest="stats_all_resources",
+      "--stats_all_resources",
+      help="Show stats for all resource types",
+      action="store_true",
+      default=False,
+      dest="stats_all_resources"
     )
     parser.add_argument(
-        "--minimum_severity",
-        help="Only report issues that are greater than this. Default: INFO",
-        default="INFO",
-        choices=["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "MUTE"],
+      "--minimum_severity",
+      help="Only report issues that are greater than this. Default: INFO",
+      default="INFO",
+      choices=["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "MUTE"]
     )
     args, accounts, config = parse_arguments(arguments, parser)
 

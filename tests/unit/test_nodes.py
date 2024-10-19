@@ -35,8 +35,8 @@ class TestNodes(unittest.TestCase):
     def test_truncate(self):
         assert_equal("hello", truncate("hello"))
         assert_equal(
-            "012345678900123456789001234567890012345..",
-            truncate("0123456789001234567890012345678900123456789001234567890"),
+          "012345678900123456789001234567890012345..",
+          truncate("0123456789001234567890012345678900123456789001234567890")
         )
 
     def test_is_public_ip(self):
@@ -55,14 +55,14 @@ class TestNodes(unittest.TestCase):
         assert_false(account.has_leaves)
         assert_equal([], account.leaves)
         assert_equal(
-            {
-                "data": {
-                    "node_data": {"id": 111111111111, "name": "prod"},
-                    "local_id": 111111111111,
-                    "type": "account",
-                    "id": "arn:aws:::111111111111:",
-                    "name": u"prod",
-                }
-            },
-            account.cytoscape_data(),
+          {
+            "data": {
+              "node_data": {"id": 111111111111, "name": "prod"},
+              "local_id": 111111111111,
+              "type": "account",
+              "id": "arn:aws:::111111111111:",
+              "name": u"prod"
+            }
+          },
+          account.cytoscape_data()
         )

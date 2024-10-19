@@ -1,6 +1,5 @@
 import unittest
-import json
-from nose.tools import assert_equal, assert_true, assert_false
+from nose.tools import assert_equal
 
 from shared.public import regroup_ranges, port_ranges_string, get_public_nodes
 from shared.common import parse_arguments
@@ -18,7 +17,7 @@ class TestPublic(unittest.TestCase):
 
     def test_get_public_nodes(self):
         args, accounts, config = parse_arguments(
-            ["--accounts", "demo", "--config", "config.json.demo"], None
+          ["--accounts", "demo", "--config", "config.json.demo"], None
         )
 
         public_nodes, warnings = get_public_nodes(accounts[0], config)

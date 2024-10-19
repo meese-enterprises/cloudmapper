@@ -1,14 +1,14 @@
 import unittest
 import argparse
-from nose.tools import assert_equal, assert_true, assert_false
+from nose.tools import assert_equal
 
 from shared.common import (
-    make_list,
-    parse_arguments,
-    get_account_stats,
-    get_account,
-    get_collection_date,
-    get_access_advisor_active_counts,
+  make_list,
+  parse_arguments,
+  get_account_stats,
+  get_account,
+  get_collection_date,
+  get_access_advisor_active_counts
 )
 
 
@@ -20,13 +20,13 @@ class TestCommon(unittest.TestCase):
     def test_parse_arguments(self):
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            "--json",
-            help="Print the json of the issues",
-            default=False,
-            action="store_true",
+          "--json",
+          help="Print the json of the issues",
+          default=False,
+          action="store_true"
         )
         args, accounts, config = parse_arguments(
-            ["--json", "--accounts", "demo", "--config", "config.json.demo"], parser
+          ["--json", "--accounts", "demo", "--config", "config.json.demo"], parser
         )
 
         assert_equal(args.json, True)

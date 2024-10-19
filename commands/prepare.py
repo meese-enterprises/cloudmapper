@@ -34,22 +34,22 @@ from netaddr import IPNetwork, IPAddress
 from shared.common import get_account, get_regions, is_external_cidr
 from shared.query import query_aws, get_parameter_file
 from shared.nodes import (
-    Account,
-    Region,
-    Vpc,
-    Az,
-    Subnet,
-    Ec2,
-    Elb,
-    Elbv2,
-    Rds,
-    VpcEndpoint,
-    Ecs,
-    Lambda,
-    Redshift,
-    ElasticSearch,
-    Cidr,
-    Connection,
+  Account,
+  Az,
+  Cidr,
+  Connection,
+  Ec2,
+  Ecs,
+  ElasticSearch,
+  Elb,
+  Elbv2,
+  Lambda,
+  Redshift,
+  Region,
+  Rds,
+  Subnet,
+  Vpc,
+  VpcEndpoint
 )
 
 __description__ = "Generate network connection information file"
@@ -58,20 +58,17 @@ MUTE = False
 
 
 def log(msg):
-    if MUTE:
-        return
+    if MUTE: return
     print(msg)
 
 
 def get_vpcs(region, outputfilter):
     vpc_filter = ""
     if "vpc-ids" in outputfilter:
-        vpc_filter += " | select (.VpcId | contains({}))".format(
-            outputfilter["vpc-ids"]
-        )
+        vpc_filter += " | select (.VpcId | contains({}))".format(outputfilter["vpc-ids"])
     if "vpc-names" in outputfilter:
         vpc_filter += ' | select(.Tags != null) | select (.Tags[] | (.Key == "Name") and (.Value | contains({})))'.format(
-            outputfilter["vpc-names"]
+          outputfilter["vpc-names"]
         )
     vpcs = query_aws(region.account, "ec2-describe-vpcs", region)
     return pyjq.all(".Vpcs[]?{}".format(vpc_filter), vpcs)
@@ -84,18 +81,14 @@ def get_azs(vpc):
 
 
 def get_vpc_peerings(region):
-    vpc_peerings = query_aws(
-        region.account, "ec2-describe-vpc-peering-connections", region
-    )
+    vpc_peerings = query_aws(region.account, "ec2-describe-vpc-peering-connections", region)
     resource_filter = ".VpcPeeringConnections[]?"
     return pyjq.all(resource_filter, vpc_peerings)
 
 
 def get_subnets(az):
     subnets = query_aws(az.account, "ec2-describe-subnets", az.region)
-    resource_filter = (
-        '.Subnets[] | select(.VpcId == "{}") | select(.AvailabilityZone == "{}")'
-    )
+    resource_filter = '.Subnets[] | select(.VpcId == "{}") | select(.AvailabilityZone == "{}")'
     return pyjq.all(resource_filter.format(az.vpc.local_id, az.local_id), subnets)
 
 
@@ -106,17 +99,13 @@ def get_ec2s(region):
 
 
 def get_elbs(region):
-    load_balancers = query_aws(
-        region.account, "elb-describe-load-balancers", region.region
-    )
+    load_balancers = query_aws(region.account, "elb-describe-load-balancers", region.region)
     return pyjq.all(".LoadBalancerDescriptions[]?", load_balancers)
 
 
 def get_elbv2s(region):
     # ALBs and NLBs
-    load_balancers = query_aws(
-        region.account, "elbv2-describe-load-balancers", region.region
-    )
+    load_balancers = query_aws(region.account, "elbv2-describe-load-balancers", region.region)
     return pyjq.all(".LoadBalancers[]?", load_balancers)
 
 
@@ -137,11 +126,11 @@ def get_ecs_tasks(region):
         tasks_json = get_parameter_file(region, "ecs", "list-tasks", clusterArn)
         for taskArn in tasks_json["taskArns"]:
             task_path = "account-data/{}/{}/{}/{}/{}".format(
-                region.account.name,
-                region.region.name,
-                "ecs-describe-tasks",
-                urllib.parse.quote_plus(clusterArn),
-                urllib.parse.quote_plus(taskArn),
+              region.account.name,
+              region.region.name,
+              "ecs-describe-tasks",
+              urllib.parse.quote_plus(clusterArn),
+              urllib.parse.quote_plus(taskArn),
             )
             task = json.load(open(task_path))
             for task in task["tasks"]:
@@ -164,9 +153,7 @@ def get_elasticsearch(region):
     domain_json = query_aws(region.account, "es-list-domain-names", region.region)
     domains = pyjq.all(".DomainNames[]?", domain_json)
     for domain in domains:
-        es = get_parameter_file(
-            region, "es", "describe-elasticsearch-domain", domain["DomainName"]
-        )["DomainStatus"]
+        es = get_parameter_file(region, "es", "describe-elasticsearch-domain", domain["DomainName"])["DomainStatus"]
         if "VPCOptions" in es:
             es_domains.append(es)
     return es_domains
@@ -175,7 +162,7 @@ def get_elasticsearch(region):
 def get_sgs(vpc):
     sgs = query_aws(vpc.account, "ec2-describe-security-groups", vpc.region)
     return pyjq.all(
-        '.SecurityGroups[]? | select(.VpcId == "{}")'.format(vpc.local_id), sgs
+      '.SecurityGroups[]? | select(.VpcId == "{}")'.format(vpc.local_id), sgs
     )
 
 
@@ -238,11 +225,10 @@ def get_connections(cidrs, vpc, outputfilter):
 
                 # Find all instances in this VPC and peered VPCs that are in this CIDR
                 for sourceVpc in itertools.chain(vpc.peers, (vpc,)):
-
                     # Ensure it is possible for instances in this VPC to be in the CIDR
                     if not (
-                        IPNetwork(sourceVpc.cidr) in IPNetwork(cidr)
-                        or IPNetwork(cidr) in IPNetwork(sourceVpc.cidr)
+                      IPNetwork(sourceVpc.cidr) in IPNetwork(cidr)
+                      or IPNetwork(cidr) in IPNetwork(sourceVpc.cidr)
                     ):
                         # The CIDR from the security group does not overlap with the CIDR of the VPC,
                         # so skip it
@@ -255,12 +241,8 @@ def get_connections(cidrs, vpc, outputfilter):
                                 # Instance found that can connect to instances in the SG
                                 # So connect this instance (sourceInstance) to every instance
                                 # in the SG.
-                                for targetInstance in sg_to_instance_mapping.get(
-                                    sg["GroupId"], {}
-                                ):
-                                    add_connection(
-                                        connections, sourceInstance, targetInstance, sg
-                                    )
+                                for targetInstance in sg_to_instance_mapping.get(sg["GroupId"], {}):
+                                    add_connection(connections, sourceInstance, targetInstance, sg)
 
             else:
                 # This is an external IP (ie. not in a private range).
@@ -274,29 +256,21 @@ def get_connections(cidrs, vpc, outputfilter):
                             # Resource is not public, but allows anything to access it,
                             # so mark set all the resources in the VPC as allowing access to it.
                             for source_instance in vpc.leaves:
-                                add_connection(
-                                    connections, source_instance, instance, sg
-                                )
+                                add_connection(connections, source_instance, instance, sg)
 
         if outputfilter.get("internal_edges", True):
             # Connect allowed in Security Groups
             for ingress_sg in pyjq.all(
-                ".IpPermissions[].UserIdGroupPairs[].GroupId", sg
+              ".IpPermissions[].UserIdGroupPairs[].GroupId", sg
             ):
                 # We have an SG and a list of SG's it allows in
                 for target in sg_to_instance_mapping.get(sg["GroupId"], {}):
                     # We have an instance and a list of SG's it allows in
                     for source in sg_to_instance_mapping.get(ingress_sg, {}):
                         if (
-                            not outputfilter.get("inter_rds_edges", True)
-                            and (
-                                source.node_type == "rds"
-                                or source.node_type == "rds_rr"
-                            )
-                            and (
-                                target.node_type == "rds"
-                                or target.node_type == "rds_rr"
-                            )
+                          not outputfilter.get("inter_rds_edges", True)
+                          and (source.node_type == "rds" or source.node_type == "rds_rr")
+                          and (target.node_type == "rds" or target.node_type == "rds_rr")
                         ):
                             continue
                         add_connection(connections, source, target, sg)
@@ -328,9 +302,9 @@ def add_node_to_subnets(region, node, nodes):
     # Add a new node (potentially the same one) back to the dictionary
     for vpc in region.children:
         if (
-            len(node.subnets) == 0
-            and node._parent
-            and vpc.local_id == node._parent.local_id
+          len(node.subnets) == 0
+          and node._parent
+          and vpc.local_id == node._parent.local_id
         ):
             # VPC Gateway Endpoints (S3 and DynamoDB) reside in a VPC, not a subnet
             # So set the relationship between the VPC and the node
@@ -357,10 +331,10 @@ def get_resource_nodes(region, outputfilter):
     # EC2 nodes
     for ec2_json in get_ec2s(region):
         node = Ec2(
-            region,
-            ec2_json,
-            outputfilter.get("collapse_by_tag", False),
-            outputfilter.get("collapse_asgs", False),
+          region,
+          ec2_json,
+          outputfilter.get("collapse_by_tag", False),
+          outputfilter.get("collapse_asgs", False),
         )
         nodes[node.arn] = node
 
@@ -464,11 +438,9 @@ def build_data_structure(account_data, config, outputfilter):
                         # Given ["Team","Dev"], see if it matches one of the tags in the node
                         if node.tags:
                             for tag in node.tags:
-                                if (
-                                    tag.get("Key", "") == pair[0]
-                                    and tag.get("Value", "") == pair[1]
-                                ):
+                                if tag.get("Key", "") == pair[0] and tag.get("Value", "") == pair[1]:
                                     condition_matches += 1
+
                     # We have a match if all of the conditions matched
                     if condition_matches == len(conditions):
                         has_match = True
@@ -507,9 +479,7 @@ def build_data_structure(account_data, config, outputfilter):
                                     cytoscape_json.append(subnet.cytoscape_data())
 
                                     for leaf in subnet.leaves:
-                                        cytoscape_json.append(
-                                            leaf.cytoscape_data(subnet.arn)
-                                        )
+                                        cytoscape_json.append(leaf.cytoscape_data(subnet.arn))
                                 else:
                                     az_children_to_remove.add(subnet)
                             for subnet in az_children_to_remove:
@@ -579,24 +549,20 @@ def build_data_structure(account_data, config, outputfilter):
 
         if len(matching_known_cidrs) > 0:
             # A match was found. Find the smallest matching range.
-            sorted_matches = sorted(
-                matching_known_cidrs.items(), key=operator.itemgetter(1)
-            )
+            sorted_matches = sorted(matching_known_cidrs.items(), key=operator.itemgetter(1))
             # Get first item to get (CIDR,size); and first item of that to get just the CIDR
             smallest_matched_cidr_string = sorted_matches[0][0]
-            smallest_matched_cidr_name = config["cidrs"][smallest_matched_cidr_string][
-                "name"
-            ]
+            smallest_matched_cidr_name = config["cidrs"][smallest_matched_cidr_string]["name"]
 
             # Check if we have a CIDR node that doesn't match the smallest one possible.
             if (
-                cidrs[cidr_string].name
-                != config["cidrs"][smallest_matched_cidr_string]["name"]
+              cidrs[cidr_string].name
+              != config["cidrs"][smallest_matched_cidr_string]["name"]
             ):
                 # See if we need to create the larger known range
                 if cidrs.get(smallest_matched_cidr_string, "") == "":
                     cidrs[smallest_matched_cidr_string] = Cidr(
-                        smallest_matched_cidr_string, smallest_matched_cidr_name
+                      smallest_matched_cidr_string, smallest_matched_cidr_name
                     )
 
                 # The existing CIDR node needs to be removed and rebuilt as the larger known range
@@ -642,20 +608,16 @@ def build_data_structure(account_data, config, outputfilter):
     MAX_NODES_FOR_WARNING = 200
     MAX_EDGES_FOR_WARNING = 500
     if (
-        total_number_of_nodes > MAX_NODES_FOR_WARNING
-        or len(connections) > MAX_EDGES_FOR_WARNING
+      total_number_of_nodes > MAX_NODES_FOR_WARNING
+      or len(connections) > MAX_EDGES_FOR_WARNING
     ):
         log(
-            "WARNING: There are {} total nodes and {} total edges.".format(
-                total_number_of_nodes, len(connections)
-            )
+          "WARNING: There are {} total nodes and {} total edges.".format(
+            total_number_of_nodes, len(connections)
+          )
         )
-        log(
-            "  This will be difficult to display and may be too complex to make sense of."
-        )
-        log(
-            "  Consider reducing the number of items in the diagram by viewing a single"
-        )
+        log("  This will be difficult to display and may be too complex to make sense of.")
+        log("  Consider reducing the number of items in the diagram by viewing a single")
         log("   region, ignoring internal edges, or other filtering.")
 
     return cytoscape_json
@@ -683,89 +645,88 @@ def prepare(account, config, outputfilter):
 def run(arguments):
     # Parse arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument("--config", help="Config file name", default="config.json", type=str)
     parser.add_argument(
-        "--config", help="Config file name", default="config.json", type=str
+      "--account",
+      help="Account to collect from",
+      required=False,
+      type=str,
+      dest="account_name"
     )
     parser.add_argument(
-        "--account",
-        help="Account to collect from",
-        required=False,
-        type=str,
-        dest="account_name",
+      "--regions",
+      help="Regions to restrict to (ex. us-east-1,us-west-2)",
+      default=None,
+      type=str
     )
     parser.add_argument(
-        "--regions",
-        help="Regions to restrict to (ex. us-east-1,us-west-2)",
-        default=None,
-        type=str,
+      "--vpc-ids",
+      help="VPC ids to restrict to (ex. vpc-1234,vpc-abcd)",
+      default=None,
+      type=str
     )
     parser.add_argument(
-        "--vpc-ids",
-        help="VPC ids to restrict to (ex. vpc-1234,vpc-abcd)",
-        default=None,
-        type=str,
+      "--vpc-names",
+      help="VPC names to restrict to (ex. prod,dev)",
+      default=None,
+      type=str
     )
     parser.add_argument(
-        "--vpc-names",
-        help="VPC names to restrict to (ex. prod,dev)",
-        default=None,
-        type=str,
+      "--tags",
+      help="Filter nodes matching tags (ex. Name=batch,Env=prod), where the tag matches are AND'd together. Use this tag multiple times to OR sets (ex. --tags Env=prod --tags Env=Dev)",
+      dest="tags",
+      default=None,
+      type=str,
+      action="append"
     )
     parser.add_argument(
-        "--tags",
-        help="Filter nodes matching tags (ex. Name=batch,Env=prod), where the tag matches are AND'd together. Use this tag multiple times to OR sets (ex. --tags Env=prod --tags Env=Dev)",
-        dest="tags",
-        default=None,
-        type=str,
-        action="append",
+      "--no-internal-edges",
+      help="Only show connections to external CIDRs",
+      dest="internal_edges",
+      action="store_false"
+    )
     )
     parser.add_argument(
-        "--no-internal-edges",
-        help="Only show connections to external CIDRs",
-        dest="internal_edges",
-        action="store_false",
+      "--inter-rds-edges",
+      help="Show connections between RDS instances",
+      dest="inter_rds_edges",
+      action="store_true"
     )
     parser.add_argument(
-        "--inter-rds-edges",
-        help="Show connections between RDS instances",
-        dest="inter_rds_edges",
-        action="store_true",
+      "--no-read-replicas",
+      help="Do not show RDS read replicas",
+      dest="read_replicas",
+      action="store_false"
     )
     parser.add_argument(
-        "--no-read-replicas",
-        help="Do not show RDS read replicas",
-        dest="read_replicas",
-        action="store_false",
+      "--no-azs",
+      help="Do not show availability zones",
+      dest="azs",
+      action="store_false"
     )
     parser.add_argument(
-        "--no-azs",
-        help="Do not show availability zones",
-        dest="azs",
-        action="store_false",
+      "--collapse-by-tag",
+      help="Collapse nodes with the same tag to a single node",
+      dest="collapse_by_tag",
+      default=None,
+      type=str
     )
     parser.add_argument(
-        "--collapse-by-tag",
-        help="Collapse nodes with the same tag to a single node",
-        dest="collapse_by_tag",
-        default=None,
-        type=str,
+      "--no-collapse-asgs",
+      help="Show all EC2 instances of Auto Scaling Groups",
+      dest="collapse_asgs",
+      action="store_false"
     )
     parser.add_argument(
-        "--no-collapse-asgs",
-        help="Show all EC2 instances of Auto Scaling Groups",
-        dest="collapse_asgs",
-        action="store_false",
+      "--no-node-data",
+      help="Do not show node data",
+      dest="node_data",
+      action="store_false"
     )
     parser.add_argument(
-        "--no-node-data",
-        help="Do not show node data",
-        dest="node_data",
-        action="store_false",
-    )
-    parser.add_argument(
-        "--readable",
-        help="Output readable JSON with indentation",
-        action="store_true"
+      "--readable",
+      help="Output readable JSON with indentation",
+      action="store_true"
     )
     parser.set_defaults(internal_edges=True)
     parser.set_defaults(inter_rds_edges=False)
@@ -780,15 +741,15 @@ def run(arguments):
         # Regions are given as 'us-east-1,us-west-2'. Split this by the comma,
         # wrap each with quotes, and add the comma back. This is needed for how we do filtering.
         outputfilter["regions"] = ",".join(
-            ['"' + r + '"' for r in args.regions.split(",")]
+          ['"' + r + '"' for r in args.regions.split(",")]
         )
     if args.vpc_ids:
         outputfilter["vpc-ids"] = ",".join(
-            ['"' + r + '"' for r in args.vpc_ids.split(",")]
+          ['"' + r + '"' for r in args.vpc_ids.split(",")]
         )
     if args.vpc_names:
         outputfilter["vpc-names"] = ",".join(
-            ['"' + r + '"' for r in args.vpc_names.split(",")]
+          ['"' + r + '"' for r in args.vpc_names.split(",")]
         )
     if args.tags:
         outputfilter["tags"] = args.tags
@@ -809,9 +770,9 @@ def run(arguments):
         exit('ERROR: Unable to load config file "{}"'.format(args.config))
     except ValueError as e:
         exit(
-            'ERROR: Config file "{}" could not be loaded ({}), see config.json.demo for an example'.format(
-                args.config, e
-            )
+          'ERROR: Config file "{}" could not be loaded ({}), see config.json.demo for an example'.format(
+            args.config, e
+          )
         )
     account = get_account(args.account_name, config, args.config)
 

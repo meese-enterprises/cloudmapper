@@ -15,7 +15,7 @@ def get_organization_accounts():
     while has_more:
         if next_token:
             response = organizations_client.list_accounts(
-                MaxResults=MAX_NUM_RESULTS, NextToken=next_token
+              MaxResults=MAX_NUM_RESULTS, NextToken=next_token
             )
         else:
             response = organizations_client.list_accounts(MaxResults=MAX_NUM_RESULTS)

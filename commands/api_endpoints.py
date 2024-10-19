@@ -19,39 +19,33 @@ def api_endpoints(accounts, config):
                 continue
             for api in json_blob.get("items", []):
                 rest_id = api["id"]
-                deployments = get_parameter_file(
-                    region, "apigateway", "get-deployments", rest_id
-                )
+                deployments = get_parameter_file(region, "apigateway", "get-deployments", rest_id)
                 if deployments is None:
                     continue
                 for deployment in deployments["items"]:
                     deployment_id = deployment["id"]
-                    stages = get_parameter_file(
-                        region, "apigateway", "get-stages", rest_id
-                    )
+                    stages = get_parameter_file(region, "apigateway", "get-stages", rest_id)
                     if stages is None:
                         continue
                     for stage in stages["item"]:
                         if stage["deploymentId"] == deployment_id:
-                            resources = get_parameter_file(
-                                region, "apigateway", "get-resources", rest_id
-                            )
+                            resources = get_parameter_file(region, "apigateway", "get-resources", rest_id)
                             if resources is None:
                                 continue
                             for resource in resources["items"]:
                                 print(
-                                    "{}.execute-api.{}.amazonaws.com/{}{}".format(
-                                        api["id"],
-                                        region.name,
-                                        stage["stageName"],
-                                        resource["path"],
-                                    )
+                                  "{}.execute-api.{}.amazonaws.com/{}{}".format(
+                                    api["id"],
+                                    region.name,
+                                    stage["stageName"],
+                                    resource["path"]
+                                  )
                                 )
 
 
 def run(arguments):
     print(
-        "*** DEPRECARTED: Not enough of data is collected for this command to run successfully ***\n\n"
+      "*** DEPRECARTED: Not enough of data is collected for this command to run successfully ***\n\n"
     )
     _, accounts, config = parse_arguments(arguments)
     api_endpoints(accounts, config)

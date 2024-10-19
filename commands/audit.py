@@ -1,5 +1,4 @@
 import argparse
-import yaml
 import json
 
 from shared.common import parse_arguments
@@ -27,48 +26,48 @@ def audit_command(accounts, config, args):
             print(json.dumps(finding, sort_keys=True))
         elif args.markdown:
             print(
-                "*Audit Finding: [{}] - {}*\\nAccount: {} ({}) - {}\\nDescription: {}\\nResource: `{}`\\nDetails:```{}```".format(
-                    conf["severity"].upper(),
-                    conf["title"],
-                    finding.region.account.name,
-                    finding.region.account.local_id,
-                    finding.region.name,
-                    conf["description"],
-                    finding.resource_id,
-                    str(finding.resource_details).replace("\n", "\\n"),
-                )
+              "*Audit Finding: [{}] - {}*\\nAccount: {} ({}) - {}\\nDescription: {}\\nResource: `{}`\\nDetails:```{}```".format(
+                conf["severity"].upper(),
+                conf["title"],
+                finding.region.account.name,
+                finding.region.account.local_id,
+                finding.region.name,
+                conf["description"],
+                finding.resource_id,
+                str(finding.resource_details).replace("\n", "\\n")
+              )
             )
         else:
             print(
-                "{} - {} ({}) - {}: {}".format(
-                    conf["severity"].upper(),
-                    finding.region.account.name,
-                    finding.region.name,
-                    conf["title"],
-                    finding.resource_id,
-                )
+              "{} - {} ({}) - {}: {}".format(
+                conf["severity"].upper(),
+                finding.region.account.name,
+                finding.region.name,
+                conf["title"],
+                finding.resource_id
+              )
             )
 
 
 def run(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--json",
-        help="Print the json of the issues",
-        default=False,
-        action="store_true",
+      "--json",
+      help="Print the json of the issues",
+      default=False,
+      action="store_true"
     )
     parser.add_argument(
-        "--markdown",
-        help="Print issue as markdown (for Slack)",
-        default=False,
-        action="store_true",
+      "--markdown",
+      help="Print issue as markdown (for Slack)",
+      default=False,
+      action="store_true"
     )
     parser.add_argument(
-        "--minimum_severity",
-        help="Only report issues that are greater than this. Default: INFO",
-        default="INFO",
-        choices=["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "MUTE"],
+      "--minimum_severity",
+      help="Only report issues that are greater than this. Default: INFO",
+      default="INFO",
+      choices=["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "MUTE"]
     )
     args, accounts, config = parse_arguments(arguments, parser)
 

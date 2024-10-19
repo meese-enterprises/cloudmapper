@@ -44,29 +44,29 @@ class TestPrepare(unittest.TestCase):
         json_blob = {u"id": 111111111111, u"name": u"demo"}
         account = Account(None, json_blob)
         region = Region(
-            account,
-            {"Endpoint": "ec2.us-east-1.amazonaws.com", "RegionName": "us-east-1"},
+          account,
+          {"Endpoint": "ec2.us-east-1.amazonaws.com", "RegionName": "us-east-1"}
         )
         assert_equal(
-            [
+          [
+            {
+              "VpcId": "vpc-12345678",
+              "Tags": [{"Value": "Prod", "Key": "Name"}],
+              "InstanceTenancy": "default",
+              "CidrBlockAssociationSet": [
                 {
-                    "VpcId": "vpc-12345678",
-                    "Tags": [{"Value": "Prod", "Key": "Name"}],
-                    "InstanceTenancy": "default",
-                    "CidrBlockAssociationSet": [
-                        {
-                            "AssociationId": "vpc-cidr-assoc-12345678",
-                            "CidrBlock": "10.0.0.0/16",
-                            "CidrBlockState": {"State": "associated"},
-                        }
-                    ],
-                    "State": "available",
-                    "DhcpOptionsId": "dopt-12345678",
-                    "CidrBlock": "10.0.0.0/16",
-                    "IsDefault": True,
+                  "AssociationId": "vpc-cidr-assoc-12345678",
+                  "CidrBlock": "10.0.0.0/16",
+                  "CidrBlockState": {"State": "associated"}
                 }
-            ],
-            get_vpcs(region, {}),
+              ],
+              "State": "available",
+              "DhcpOptionsId": "dopt-12345678",
+              "CidrBlock": "10.0.0.0/16",
+              "IsDefault": True
+            }
+          ],
+          get_vpcs(region, {})
         )
 
     def test_get_ec2s(self):
@@ -117,52 +117,51 @@ class TestPrepare(unittest.TestCase):
 
         # Check number of nodes
         assert_equal(
-            2, len(pyjq.all('.[].data|select(.type == "ip")|keys', cytoscape_json))
+          2, len(pyjq.all('.[].data|select(.type == "ip")|keys', cytoscape_json))
         )
         assert_equal(
-            2, len(pyjq.all('.[].data|select(.type == "rds")|keys', cytoscape_json))
+          2, len(pyjq.all('.[].data|select(.type == "rds")|keys', cytoscape_json))
         )
         assert_equal(
-            3, len(pyjq.all('.[].data|select(.type == "ec2")|keys', cytoscape_json))
+          3, len(pyjq.all('.[].data|select(.type == "ec2")|keys', cytoscape_json))
         )
         assert_equal(
-            2, len(pyjq.all('.[].data|select(.type == "elb")|keys', cytoscape_json))
+          2, len(pyjq.all('.[].data|select(.type == "elb")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "elbv2")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "elbv2")|keys', cytoscape_json))
         )
         assert_equal(
-            4, len(pyjq.all('.[].data|select(.type == "subnet")|keys', cytoscape_json))
+          4, len(pyjq.all('.[].data|select(.type == "subnet")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "region")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "region")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "vpc")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "vpc")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "sqs")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "sqs")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "s3")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "s3")|keys', cytoscape_json))
         )
         assert_equal(
-            2,
-            len(pyjq.all('.[].data|select(.type == "redshift")|keys', cytoscape_json)),
+          2, len(pyjq.all('.[].data|select(.type == "redshift")|keys', cytoscape_json))
         )
         assert_equal(
-            1,
-            len(
-                pyjq.all(
-                    '.[].data|select(.type == "elasticsearch")|keys', cytoscape_json
-                )
-            ),
+          1,
+          len(
+            pyjq.all(
+              '.[].data|select(.type == "elasticsearch")|keys', cytoscape_json
+            )
+          )
         )
         assert_equal(
-            2, len(pyjq.all('.[].data|select(.type == "lambda")|keys', cytoscape_json))
+          2, len(pyjq.all('.[].data|select(.type == "lambda")|keys', cytoscape_json))
         )
         assert_equal(
-            1, len(pyjq.all('.[].data|select(.type == "ecs")|keys', cytoscape_json))
+          1, len(pyjq.all('.[].data|select(.type == "ecs")|keys', cytoscape_json))
         )
 
         # Test without internal edges
@@ -171,7 +170,7 @@ class TestPrepare(unittest.TestCase):
 
         # Check number of connections
         assert_equal(
-            19, len(pyjq.all('.[].data|select(.type == "edge")|keys', cytoscape_json))
+          19, len(pyjq.all('.[].data|select(.type == "edge")|keys', cytoscape_json))
         )
 
         # Test with AZs
@@ -181,7 +180,7 @@ class TestPrepare(unittest.TestCase):
 
         # Check number of connections
         assert_equal(
-            2, len(pyjq.all('.[].data|select(.type == "az")|keys', cytoscape_json))
+          2, len(pyjq.all('.[].data|select(.type == "az")|keys', cytoscape_json))
         )
 
         # Test with specific VPC name
@@ -191,5 +190,5 @@ class TestPrepare(unittest.TestCase):
 
         # Check number of connections
         assert_equal(
-            3, len(pyjq.all('.[].data|select(.type == "ec2")|keys', cytoscape_json))
+          3, len(pyjq.all('.[].data|select(.type == "ec2")|keys', cytoscape_json))
         )

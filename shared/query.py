@@ -18,10 +18,10 @@ def query_aws(account, query, region=None):
 
 def get_parameter_file(region, service, function, parameter_value):
     file_name = "account-data/{}/{}/{}/{}".format(
-        region.account.name,
-        region.name,
-        "{}-{}".format(service, function),
-        urllib.parse.quote_plus(parameter_value),
+      region.account.name,
+      region.name,
+      "{}-{}".format(service, function),
+      urllib.parse.quote_plus(parameter_value)
     )
     if not os.path.isfile(file_name):
         return None

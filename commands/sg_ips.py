@@ -4,11 +4,11 @@ from netaddr import IPNetwork
 import pyjq
 
 from shared.common import (
-    parse_arguments,
-    query_aws,
-    get_regions,
-    is_external_cidr,
-    is_unblockable_cidr,
+  get_regions,
+  is_external_cidr,
+  is_unblockable_cidr,
+  parse_arguments,
+  query_aws
 )
 from shared.nodes import Account, Region
 
@@ -17,7 +17,7 @@ from shared.nodes import Account, Region
 # not very valuable, and is difficult to setup (requires matplotlib, basemap data, and geoip data)
 
 __description__ = (
-    "[Deprecated] Find all IPs are that are given trusted access via Security Groups"
+  "[Deprecated] Find all IPs are that are given trusted access via Security Groups"
 )
 
 
@@ -30,7 +30,7 @@ def get_cidrs_for_account(account, cidrs):
         sgs = pyjq.all(".SecurityGroups[]", sg_json)
         for sg in sgs:
             cidr_and_name_list = pyjq.all(
-                ".IpPermissions[].IpRanges[]|[.CidrIp,.Description]", sg
+              ".IpPermissions[].IpRanges[]|[.CidrIp,.Description]", sg
             )
             for cidr, name in cidr_and_name_list:
                 if not is_external_cidr(cidr):
@@ -38,17 +38,17 @@ def get_cidrs_for_account(account, cidrs):
 
                 if is_unblockable_cidr(cidr):
                     print(
-                        "WARNING: Unneeded cidr used {} in {}".format(
-                            cidr, sg["GroupId"]
-                        )
+                      "WARNING: Unneeded cidr used {} in {}".format(
+                        cidr, sg["GroupId"]
+                      )
                     )
                     continue
 
                 if cidr.startswith("0.0.0.0") and not cidr.endswith("/0"):
                     print(
-                        "WARNING: Unexpected CIDR for attempted public access {} in {}".format(
-                            cidr, sg["GroupId"]
-                        )
+                      "WARNING: Unexpected CIDR for attempted public access {} in {}".format(
+                        cidr, sg["GroupId"]
+                      )
                     )
                     continue
 
@@ -66,13 +66,11 @@ def get_cidrs_for_account(account, cidrs):
                         continue
                     cidr = ip_ranges["CidrIp"]
                     for cidr_seen in cidrs_seen:
-                        if IPNetwork(cidr_seen) in IPNetwork(cidr) or IPNetwork(
-                            cidr
-                        ) in IPNetwork(cidr_seen):
+                        if IPNetwork(cidr_seen) in IPNetwork(cidr) or IPNetwork(cidr) in IPNetwork(cidr_seen):
                             print(
-                                "WARNING: Overlapping CIDRs in {}, {} and {}".format(
-                                    sg["GroupId"], cidr, cidr_seen
-                                )
+                              "WARNING: Overlapping CIDRs in {}, {} and {}".format(
+                                sg["GroupId"], cidr, cidr_seen
+                              )
                             )
                     cidrs_seen.add(cidr)
 
@@ -84,13 +82,13 @@ def sg_ips(accounts):
         from mpl_toolkits.basemap import Basemap
     except:
         print(
-            "ERROR: You must install basemap for mpl_toolkits. There is no pip for it."
+          "ERROR: You must install basemap for mpl_toolkits. There is no pip for it."
         )
         print("See https://matplotlib.org/basemap/users/installing.html")
         print("\nSteps:")
         print("mkdir -p tmp; cd tmp")
         print(
-            "curl https://codeload.github.com/matplotlib/basemap/tar.gz/v1.1.0 --output basemap-1.1.0.tar.gz"
+          "curl https://codeload.github.com/matplotlib/basemap/tar.gz/v1.1.0 --output basemap-1.1.0.tar.gz"
         )
         print("tar -zxvf basemap-1.1.0.tar.gz")
         print("cd basemap-1.1.0/")
@@ -118,22 +116,22 @@ def sg_ips(accounts):
     except:
         # geoip files do not exist.  Tell the user.
         print(
-            "ERROR: You must download the geoip files GeoLite2-ASN.mmdb and GeoLite2-City.mmdb"
+          "ERROR: You must download the geoip files GeoLite2-ASN.mmdb and GeoLite2-City.mmdb"
         )
         print(
-            "from https://dev.maxmind.com/geoip/geoip2/geolite2/ and put them in ./data/"
+          "from https://dev.maxmind.com/geoip/geoip2/geolite2/ and put them in ./data/"
         )
         print("\nSteps:")
         print("mkdir -p data; cd data")
         print("\n# Get city data")
         print(
-            "curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz --output GeoLite2-City.tar.gz"
+          "curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz --output GeoLite2-City.tar.gz"
         )
         print("tar -zxvf GeoLite2-City.tar.gz")
         print("mv GeoLite2-City_*/GeoLite2-City.mmdb .")
         print("\n# Get ASN data")
         print(
-            "curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz --output GeoLite2-ASN.tar.gz"
+          "curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz --output GeoLite2-ASN.tar.gz"
         )
         print("tar -zxvf GeoLite2-ASN.tar.gz")
         print("mv GeoLite2-ASN*/GeoLite2-ASN.mmdb .")
@@ -217,10 +215,10 @@ def sg_ips(accounts):
 
         # Collect information about the cidrs in a way that can be sorted
         cidr_dict["{}-{}-{}-{}".format(country, state, city, cidr)] = {
-            "cidr": cidr,
-            "description": description,
-            "location": location_name,
-            "isp": isp,
+          "cidr": cidr,
+          "description": description,
+          "location": location_name,
+          "isp": isp
         }
 
     # Sort the cidrs
@@ -229,12 +227,12 @@ def sg_ips(accounts):
     # Print them in sorted order
     for _, cidr in sorted_cidrs.items():
         print(
-            "{}\t {}\t {}\t {}".format(
-                cidr["cidr"].ljust(18),
-                cidr["description"].ljust(20),
-                cidr["location"].ljust(50),
-                cidr["isp"],
-            )
+          "{}\t {}\t {}\t {}".format(
+            cidr["cidr"].ljust(18),
+            cidr["description"].ljust(20),
+            cidr["location"].ljust(50),
+            cidr["isp"],
+          )
         )
 
     # Save image
@@ -242,20 +240,20 @@ def sg_ips(accounts):
     earth = Basemap(ax=ax)
     earth.drawcoastlines(color="#778877", linewidth=0.5)
     ax.scatter(
-        latlong["longitude"],
-        latlong["latitude"],
-        15,  # size
-        c="red",
-        alpha=1,
-        zorder=10,
+      latlong["longitude"],
+      latlong["latitude"],
+      15,  # size
+      c="red",
+      alpha=1,
+      zorder=10
     )
     ax.set_xlabel("Trusted IP locations")
     fig.set_size_inches(8, 6)
     fig.savefig("trusted_ips.png", pad_inches=0, bbox_inches="tight")
     print(
-        "Image saved to {}".format(
-            path.join(path.dirname(path.realpath("__file__")), "trusted_ips.png")
-        )
+      "Image saved to {}".format(
+        path.join(path.dirname(path.realpath("__file__")), "trusted_ips.png")
+      )
     )
 
 

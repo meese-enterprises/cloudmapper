@@ -40,23 +40,23 @@ def amis(args, accounts, config):
     regions_file = "data/aws/us-east-1/ec2-describe-images.json"
     if not os.path.isfile(regions_file):
         raise Exception(
-            "You need to download the set of public AMI images.  Run:\n"
-            "  mkdir -p data/aws\n"
-            "  cd data/aws\n"
-            "  aws ec2 describe-regions | jq -r '.Regions[].RegionName' | xargs -I{} mkdir {}\n"
-            "  aws ec2 describe-regions | jq -r '.Regions[].RegionName' | xargs -I{} sh -c 'aws --region {} ec2 describe-images --executable-users all > {}/ec2-describe-images.json'\n"
+          "You need to download the set of public AMI images.  Run:\n"
+          "  mkdir -p data/aws\n"
+          "  cd data/aws\n"
+          "  aws ec2 describe-regions | jq -r '.Regions[].RegionName' | xargs -I{} mkdir {}\n"
+          "  aws ec2 describe-regions | jq -r '.Regions[].RegionName' | xargs -I{} sh -c 'aws --region {} ec2 describe-images --executable-users all > {}/ec2-describe-images.json'\n"
         )
 
     print(
         "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-            "Account Name",
-            "Region Name",
-            "Instance Id",
-            "Instance Name",
-            "AMI ID",
-            "Is Public",
-            "AMI Description",
-            "AMI Owner",
+          "Account Name",
+          "Region Name",
+          "Instance Id",
+          "Instance Name",
+          "AMI ID",
+          "Is Public",
+          "AMI Description",
+          "AMI Owner"
         )
     )
 
@@ -72,9 +72,7 @@ def amis(args, accounts, config):
             region = Region(account, {"RegionName": region_name})
 
             instances = query_aws(account, "ec2-describe-instances", region)
-            resource_filter = (
-                '.Reservations[].Instances[] | select(.State.Name == "running")'
-            )
+            resource_filter = '.Reservations[].Instances[] | select(.State.Name == "running")'
             if args.instance_filter != "":
                 resource_filter += "|{}".format(args.instance_filter)
 
@@ -95,9 +93,7 @@ def amis(args, accounts, config):
                 image_id = instance["ImageId"]
                 image_description = ""
                 owner = ""
-                image, is_public_image = find_image(
-                    image_id, public_images, account_images
-                )
+                image, is_public_image = find_image(image_id, public_images, account_images)
                 if image:
                     # Many images don't have all fields, so try the Name, then Description, then ImageLocation
                     image_description = image.get("Name", "")
@@ -108,25 +104,25 @@ def amis(args, accounts, config):
                     owner = image.get("OwnerId", "")
 
                 print(
-                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-                        account.name,
-                        region.name,
-                        instance["InstanceId"],
-                        get_instance_name(instance),
-                        image_id,
-                        is_public_image,
-                        image_description,
-                        owner,
-                    )
+                  "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                    account.name,
+                    region.name,
+                    instance["InstanceId"],
+                    get_instance_name(instance),
+                    image_id,
+                    is_public_image,
+                    image_description,
+                    owner
+                  )
                 )
 
 
 def run(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--instance_filter",
-        help='Filter on the EC2 info, for example `select(.Platform == "windows")` or `select(.Architecture!="x86_64")`',
-        default="",
+      "--instance_filter",
+      help='Filter on the EC2 info, for example `select(.Platform == "windows")` or `select(.Architecture!="x86_64")`',
+      default=""
     )
     args, accounts, config = parse_arguments(arguments, parser)
     amis(args, accounts, config)

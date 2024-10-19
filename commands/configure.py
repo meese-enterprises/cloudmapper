@@ -17,43 +17,34 @@ def configure(action, arguments):
             config = json.loads(f.read())
     if action == "add-account":
         config["accounts"].append(
-            {
-                "id": str(arguments.id),
-                "name": str(arguments.name),
-                "default": True if arguments.default.lower() == "true" else False,
-            }
+          {
+            "id": str(arguments.id),
+            "name": str(arguments.name),
+            "default": True if arguments.default.lower() == "true" else False
+          }
         )
     elif action == "add-cidr":
         try:
             netaddr.IPNetwork(arguments.cidr)
         except netaddr.core.AddrFormatError:
             exit("ERROR: CIDR is not valid")
-            return
         config["cidrs"][str(arguments.cidr)] = {"name": str(arguments.name)}
     elif action == "remove-account":
         if arguments.name is None or arguments.id is None:
-
             def condition(x, y):
                 return x or y
-
         else:
-
             def condition(x, y):
                 return x and y
 
         for account in config["accounts"]:
-            if condition(
-                account["id"] == arguments.id, account["name"] == arguments.name
-            ):
+            if condition(account["id"] == arguments.id, account["name"] == arguments.name):
                 config["accounts"].remove(account)
     elif action == "remove-cidr":
         if arguments.name is None or arguments.cidr is None:
-
             def condition(x, y):
                 return x or y
-
         else:
-
             def condition(x, y):
                 return x and y
 
@@ -78,26 +69,25 @@ def configure(action, arguments):
 def run(arguments):
     if len(arguments) == 0:
         exit(
-            "ERROR: Missing action for configure.\n"
-            "Usage: [add-cidr|add-account|discover-organization-accounts|remove-cidr|remove-account]"
+          "ERROR: Missing action for configure.\n"
+          "Usage: [add-cidr|add-account|discover-organization-accounts|remove-cidr|remove-account]"
         )
-        return
     action = arguments[0]
     arguments = arguments[1:]
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--config-file", help="Path to the config file", default="config.json", type=str
+      "--config-file", help="Path to the config file", default="config.json", type=str
     )
     if action == "add-account" or action == "remove-account":
         required = True if action.startswith("add") else False
         parser.add_argument("--name", help="Account name", required=required, type=str)
         parser.add_argument("--id", help="Account ID", required=required, type=str)
         parser.add_argument(
-            "--default",
-            help="Default account",
-            required=False,
-            default="False",
-            type=str,
+          "--default",
+          help="Default account",
+          required=False,
+          default="False",
+          type=str
         )
     elif action == "add-cidr" or action == "remove-cidr":
         required = True if action.startswith("add") else False

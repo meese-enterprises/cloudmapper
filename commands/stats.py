@@ -35,7 +35,7 @@ def output_image(accounts, account_stats, resource_names, output_image_file):
 
     sns.set()
     plot = df.set_index("Resource").T.plot(
-        kind="barh", stacked=True, fontsize=10, figsize=[8, 0.3 * len(accounts)]
+      kind="barh", stacked=True, fontsize=10, figsize=[8, 0.3 * len(accounts)]
     )
     plt.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
     fig = plot.get_figure()
@@ -55,7 +55,7 @@ def stats(accounts, config, args):
     account_stats = {}
     for account in accounts:
         account_stats[account["name"]] = get_account_stats(
-            account, args.stats_all_resources
+          account, args.stats_all_resources
         )
         resource_names = account_stats[account["name"]]["keys"]
 
@@ -77,23 +77,23 @@ def run(arguments):
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--output_image",
-        help="Name of output image",
-        default="resource_stats.png",
-        type=str,
+      "--output_image",
+      help="Name of output image",
+      default="resource_stats.png",
+      type=str
     )
     parser.add_argument(
-        "--no_output_image",
-        help="Don't create output image",
-        default=False,
-        action="store_true",
+      "--no_output_image",
+      help="Don't create output image",
+      default=False,
+      action="store_true"
     )
     parser.add_argument(
-        "--stats_all_resources",
-        help="Show stats for all resource types",
-        action="store_true",
-        default=False,
-        dest="stats_all_resources",
+      "--stats_all_resources",
+      help="Show stats for all resource types",
+      action="store_true",
+      default=False,
+      dest="stats_all_resources"
     )
 
     args, accounts, config = parse_arguments(arguments, parser)

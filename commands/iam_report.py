@@ -51,28 +51,28 @@ def load_credential_report():
     for line in csv_lines:
         parts = line.split(",")
         user = {
-            "user": parts[0],
-            "arn": parts[1],
-            "user_creation_time": parts[2],
-            "password_enabled": parts[3],
-            "password_last_used": parts[4],
-            "password_last_changed": parts[5],
-            "password_next_rotation": parts[6],
-            "mfa_active": parts[7],
-            "access_key_1_active": parts[8],
-            "access_key_1_last_rotated": parts[9],
-            "access_key_1_last_used_date": parts[10],
-            "access_key_1_last_used_region": parts[11],
-            "access_key_1_last_used_service": parts[12],
-            "access_key_2_active": parts[13],
-            "access_key_2_last_rotated": parts[14],
-            "access_key_2_last_used_date": parts[15],
-            "access_key_2_last_used_region": parts[16],
-            "access_key_2_last_used_service": parts[17],
-            "cert_1_active": parts[18],
-            "cert_1_last_rotated": parts[19],
-            "cert_2_active": parts[20],
-            "cert_2_last_rotated": parts[21],
+          "user": parts[0],
+          "arn": parts[1],
+          "user_creation_time": parts[2],
+          "password_enabled": parts[3],
+          "password_last_used": parts[4],
+          "password_last_changed": parts[5],
+          "password_next_rotation": parts[6],
+          "mfa_active": parts[7],
+          "access_key_1_active": parts[8],
+          "access_key_1_last_rotated": parts[9],
+          "access_key_1_last_used_date": parts[10],
+          "access_key_1_last_used_region": parts[11],
+          "access_key_1_last_used_service": parts[12],
+          "access_key_2_active": parts[13],
+          "access_key_2_last_rotated": parts[14],
+          "access_key_2_last_used_date": parts[15],
+          "access_key_2_last_used_region": parts[16],
+          "access_key_2_last_used_service": parts[17],
+          "cert_1_active": parts[18],
+          "cert_1_last_rotated": parts[19],
+          "cert_2_active": parts[20],
+          "cert_2_last_rotated": parts[21]
         }
         users.append[user]
     return users
@@ -86,10 +86,10 @@ def get_access_advisor(region, principal_stats, json_account_auth_details, args)
         stats = {}
         stats["auth"] = principal_auth
         job_id = get_parameter_file(
-            region,
-            "iam",
-            "generate-service-last-accessed-details",
-            principal_auth["Arn"],
+          region,
+          "iam",
+          "generate-service-last-accessed-details",
+          principal_auth["Arn"],
         )["JobId"]
         json_last_access_details = get_parameter_file(
             region, "iam", "get-service-last-accessed-details", job_id
@@ -99,16 +99,16 @@ def get_access_advisor(region, principal_stats, json_account_auth_details, args)
         stats["is_inactive"] = True
 
         job_completion_date = datetime.datetime.strptime(
-            json_last_access_details["JobCompletionDate"][0:10], "%Y-%m-%d"
+          json_last_access_details["JobCompletionDate"][0:10], "%Y-%m-%d"
         )
 
         for service in json_last_access_details["ServicesLastAccessed"]:
             if "LastAuthenticated" in service:
                 last_access_date = datetime.datetime.strptime(
-                    service["LastAuthenticated"][0:10], "%Y-%m-%d"
+                  service["LastAuthenticated"][0:10], "%Y-%m-%d"
                 )
                 service["days_since_last_use"] = (
-                    job_completion_date - last_access_date
+                  job_completion_date - last_access_date
                 ).days
                 if service["days_since_last_use"] < args.max_age:
                     stats["is_inactive"] = False
@@ -130,8 +130,8 @@ def get_service_count_and_used(service_last_accessed):
 def html_service_chart(principal, services_used, services_granted):
     chartid = "serviceChart" + principal
     return (
-        '<div style="width:30%"><canvas id="{}" width="100" height="15"></canvas></div>'
-        + '<script>makeServiceUnusedChart("{}", {}, {});</script>'
+      '<div style="width:30%"><canvas id="{}" width="100" height="15"></canvas></div>'
+      + '<script>makeServiceUnusedChart("{}", {}, {});</script>'
     ).format(chartid, chartid, services_used, services_granted - services_used)
 
 
@@ -144,7 +144,7 @@ class graph_node(object):
 
     def cytoscape_data(self):
         response = {
-            "data": {"id": self.key(), "name": self.name(), "type": self.get_type()}
+          "data": {"id": self.key(), "name": self.name(), "type": self.get_type()}
         }
 
         return response
@@ -353,7 +353,7 @@ def build_cytoscape_graph(iam_graph):
         node = iam_graph[k]
         for child in node.children():
             edge = {
-                "data": {"source": node.key(), "target": child.key(), "type": "edge"}
+              "data": {"source": node.key(), "target": child.key(), "type": "edge"}
             }
             cytoscape_json.append(edge)
 
@@ -401,7 +401,7 @@ def iam_report(accounts, config, args):
         region = Region(account, region_json)
         if region.name == "us-east-1":
             json_account_auth_details = query_aws(
-                region.account, "iam-get-account-authorization-details", region
+              region.account, "iam-get-account-authorization-details", region
             )
             get_access_advisor(region, principal_stats, json_account_auth_details, args)
 
@@ -438,29 +438,29 @@ def iam_report(accounts, config, args):
     t["users"] = []
     for principal in sorted(users):
         service_counts = get_service_count_and_used(
-            principal_stats[principal]["last_access"]["ServicesLastAccessed"]
+          principal_stats[principal]["last_access"]["ServicesLastAccessed"]
         )
         t["users"].append(
-            {
-                "arn": principal,
-                "name": principal_stats[principal]["auth"]["UserName"],
-                "services_used": service_counts["service_used_count"],
-                "services_granted": service_counts["service_count"],
-            }
+          {
+            "arn": principal,
+            "name": principal_stats[principal]["auth"]["UserName"],
+            "services_used": service_counts["service_used_count"],
+            "services_granted": service_counts["service_count"]
+          }
         )
 
     t["roles"] = []
     for principal in sorted(roles):
         service_counts = get_service_count_and_used(
-            principal_stats[principal]["last_access"]["ServicesLastAccessed"]
+          principal_stats[principal]["last_access"]["ServicesLastAccessed"]
         )
         t["roles"].append(
-            {
-                "arn": principal,
-                "name": principal_stats[principal]["auth"]["RoleName"],
-                "services_used": service_counts["service_used_count"],
-                "services_granted": service_counts["service_count"],
-            }
+          {
+            "arn": principal,
+            "name": principal_stats[principal]["auth"]["RoleName"],
+            "services_used": service_counts["service_used_count"],
+            "services_granted": service_counts["service_count"]
+          }
         )
 
     t["inactive_principals"] = []
@@ -471,11 +471,11 @@ def iam_report(accounts, config, args):
             icon = '<i class="fas fa-user"></i>'
 
         t["inactive_principals"].append(
-            {
-                "arn": principal,
-                "icon": icon,
-                "name": principal_stats[principal]["short_name"],
-            }
+          {
+            "arn": principal,
+            "icon": icon,
+            "name": principal_stats[principal]["short_name"]
+          }
         )
 
     t["principals"] = []
@@ -502,7 +502,7 @@ def iam_report(accounts, config, args):
         # Show access advisor info
         # Get collection date
         report_date = datetime.datetime.strptime(
-            stats["last_access"]["JobCompletionDate"][0:10], "%Y-%m-%d"
+          stats["last_access"]["JobCompletionDate"][0:10], "%Y-%m-%d"
         )
 
         # Show services
@@ -511,10 +511,10 @@ def iam_report(accounts, config, args):
             last_use = "-"
             if service.get("LastAuthenticated", "-") != "-":
                 last_use = (
-                    report_date
-                    - datetime.datetime.strptime(
-                        service["LastAuthenticated"][0:10], "%Y-%m-%d"
-                    )
+                  report_date
+                  - datetime.datetime.strptime(
+                    service["LastAuthenticated"][0:10], "%Y-%m-%d"
+                  )
                 ).days
 
             style = ""
@@ -525,12 +525,12 @@ def iam_report(accounts, config, args):
             source = ";".join(source)
 
             p["services"].append(
-                {
-                    "style": style,
-                    "name": service["ServiceName"],
-                    "last_use": last_use,
-                    "source": source,
-                }
+              {
+                "style": style,
+                "name": service["ServiceName"],
+                "last_use": last_use,
+                "source": source
+              }
             )
 
         # List groups
@@ -539,7 +539,7 @@ def iam_report(accounts, config, args):
         arn_prefix = stats["auth"]["Arn"][0:26]
         for group in groups:
             p["groups"].append(
-                {"link_id": tolink(arn_prefix + "group/" + group), "name": group}
+              {"link_id": tolink(arn_prefix + "group/" + group), "name": group}
             )
 
         # List attached policies
@@ -547,7 +547,7 @@ def iam_report(accounts, config, args):
         p["managed_policies"] = []
         for policy in policies:
             p["managed_policies"].append(
-                {"link_id": tolink(policy["PolicyArn"]), "name": policy["PolicyName"]}
+              {"link_id": tolink(policy["PolicyArn"]), "name": policy["PolicyName"]}
             )
 
         # Show inline policies
@@ -556,16 +556,16 @@ def iam_report(accounts, config, args):
         p["inline_policies"] = []
         for policy in policies:
             p["inline_policies"].append(
-                {
-                    "name": policy["PolicyName"],
-                    "document": json.dumps(policy["PolicyDocument"], indent=4),
-                }
+              {
+                "name": policy["PolicyName"],
+                "document": json.dumps(policy["PolicyDocument"], indent=4)
+              }
             )
 
         # Show AssumeRolePolicyDocument
         if "RoleName" in stats["auth"]:
             p["assume_role"] = json.dumps(
-                stats["auth"]["AssumeRolePolicyDocument"], indent=4
+              stats["auth"]["AssumeRolePolicyDocument"], indent=4
             )
 
         t["principals"].append(p)
@@ -579,22 +579,22 @@ def iam_report(accounts, config, args):
         g["members"] = []
         for parent in group_node.parents():
             g["members"].append(
-                {"link_id": tolink(parent.key()), "name": parent.name()}
+              {"link_id": tolink(parent.key()), "name": parent.name()}
             )
 
         g["managed_policies"] = []
         for policy in group["AttachedManagedPolicies"]:
             g["managed_policies"].append(
-                {"link_id": tolink(policy["PolicyArn"]), "name": policy["PolicyName"]}
+              {"link_id": tolink(policy["PolicyArn"]), "name": policy["PolicyName"]}
             )
 
         g["inline_policies"] = []
         for policy in group["GroupPolicyList"]:
             g["inline_policies"].append(
-                {
-                    "name": policy["PolicyName"],
-                    "document": json.dumps(policy["PolicyDocument"], indent=4),
-                }
+              {
+                "name": policy["PolicyName"],
+                "document": json.dumps(policy["PolicyDocument"], indent=4)
+              }
             )
 
         t["groups"].append(g)
@@ -602,9 +602,9 @@ def iam_report(accounts, config, args):
     t["policies"] = []
     for policy in json_account_auth_details["Policies"]:
         p = {
-            "link_id": tolink(policy["Arn"]),
-            "name": policy["PolicyName"],
-            "managed": "",
+          "link_id": tolink(policy["Arn"]),
+          "name": policy["PolicyName"],
+          "managed": ""
         }
 
         if "arn:aws:iam::aws:policy" in policy["Arn"]:
@@ -615,7 +615,7 @@ def iam_report(accounts, config, args):
         p["attachments"] = []
         for parent in policy_node.parents():
             p["attachments"].append(
-                {"link_id": tolink(parent.key()), "name": parent.name()}
+              {"link_id": tolink(parent.key()), "name": parent.name()}
             )
 
         for version in policy["PolicyVersionList"]:
@@ -633,32 +633,32 @@ def iam_report(accounts, config, args):
             json.dump(t, f)
 
     print(
-        "Report written to {}.{}".format(
-            REPORT_OUTPUT_FILE, args.requested_output.value
-        )
+      "Report written to {}.{}".format(
+        REPORT_OUTPUT_FILE, args.requested_output.value
+      )
     )
 
 
 def run(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--max-age",
-        help="Number of days a user or role hasn't been used before it's marked dead. Default: 90",
-        default=90,
-        type=int,
+      "--max-age",
+      help="Number of days a user or role hasn't been used before it's marked dead. Default: 90",
+      default=90,
+      type=int
     )
     parser.add_argument(
-        "--graph",
-        help="Display a graph. Default: False",
-        dest="show_graph",
-        action="store_true",
+      "--graph",
+      help="Display a graph. Default: False",
+      dest="show_graph",
+      action="store_true"
     )
     parser.add_argument(
-        "--output",
-        help="Set the output type for the report. [json | html]. Default: html",
-        default=OutputFormat.html,
-        type=OutputFormat,
-        dest="requested_output",
+      "--output",
+      help="Set the output type for the report. [json | html]. Default: html",
+      default=OutputFormat.html,
+      type=OutputFormat,
+      dest="requested_output"
     )
     parser.set_defaults(show_graph=False)
     args, accounts, config = parse_arguments(arguments, parser)

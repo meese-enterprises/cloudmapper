@@ -68,10 +68,10 @@ def log_error(msg, location=None, reasons=[]):
 def log_issue(severity, msg, location=None, reasons=[]):
     if severity >= LOG_LEVEL:
         json_issue = {
-            "Severity": Severity.string(severity),
-            "Issue": msg,
-            "Location": location,
-            "Reasons": reasons,
+          "Severity": Severity.string(severity),
+          "Issue": msg,
+          "Location": location,
+          "Reasons": reasons
         }
         print(json.dumps(json_issue, sort_keys=True), file=sys.stderr)
 
@@ -96,14 +96,14 @@ class Finding(object):
 
     def __str__(self):
         return json.dumps(
-            {
-                "account_id": self.region.account.local_id,
-                "account_name": self.region.account.name,
-                "region": self.region.name,
-                "issue": self.issue_id,
-                "resource": self.resource_id,
-                "details": self.resource_details,
-            }
+          {
+            "account_id": self.region.account.local_id,
+            "account_name": self.region.account.name,
+            "region": self.region.name,
+            "issue": self.issue_id,
+            "resource": self.resource_id,
+            "details": self.resource_details
+          }
         )
 
     @property
@@ -128,9 +128,9 @@ def make_list(v):
 def is_external_cidr(cidr):
     ipnetwork = IPNetwork(cidr)
     if (
-        ipnetwork in IPNetwork("10.0.0.0/8")
-        or ipnetwork in IPNetwork("172.16.0.0/12")
-        or ipnetwork in IPNetwork("192.168.0.0/16")
+      ipnetwork in IPNetwork("10.0.0.0/8")
+      or ipnetwork in IPNetwork("172.16.0.0/12")
+      or ipnetwork in IPNetwork("192.168.0.0/16")
     ):
         return False
     return True
@@ -139,15 +139,15 @@ def is_external_cidr(cidr):
 def is_unblockable_cidr(cidr):
     ipnetwork = IPNetwork(cidr)
     if (
-        ipnetwork in IPNetwork("169.254.0.0/16")
-        or ipnetwork in IPNetwork("127.0.0.0/8")  # link local
-        or ipnetwork in IPNetwork("192.0.2.0/24")  # loopback
-        or ipnetwork in IPNetwork("198.51.100.0/24")  # Test network from RFC 5737
-        or ipnetwork in IPNetwork("203.0.113.0/24")  # Test network
-        or ipnetwork in IPNetwork("224.0.0.0/4")  # Test network
-        or ipnetwork in IPNetwork("240.0.0.0/5")  # class D multicast
-        or ipnetwork in IPNetwork("248.0.0.0/5")  # class E reserved
-        or ipnetwork in IPNetwork("255.255.255.255/32")  # reserved  # broadcast
+      ipnetwork in IPNetwork("169.254.0.0/16")
+      or ipnetwork in IPNetwork("127.0.0.0/8")  # link local
+      or ipnetwork in IPNetwork("192.0.2.0/24")  # loopback
+      or ipnetwork in IPNetwork("198.51.100.0/24")  # Test network from RFC 5737
+      or ipnetwork in IPNetwork("203.0.113.0/24")  # Test network
+      or ipnetwork in IPNetwork("224.0.0.0/4")  # Test network
+      or ipnetwork in IPNetwork("240.0.0.0/5")  # class D multicast
+      or ipnetwork in IPNetwork("248.0.0.0/5")  # class E reserved
+      or ipnetwork in IPNetwork("255.255.255.255/32")  # reserved  # broadcast
     ):
         return True
     return False
@@ -176,7 +176,7 @@ def get_regions(account, outputfilter={}):
     region_filter = ""
     if "regions" in outputfilter:
         region_filter = "| select(.RegionName | contains({}))".format(
-            outputfilter["regions"]
+          outputfilter["regions"]
         )
 
     regions = pyjq.all(".Regions[]{}".format(region_filter), region_data)
@@ -196,14 +196,14 @@ def get_account(account_name, config=None, config_filename="config.json.demo"):
     # Else could not find account
     if account_name is None:
         exit(
-            "ERROR: Must specify an account, or set one in {} as a default".format(
-                config_filename
-            )
+          "ERROR: Must specify an account, or set one in {} as a default".format(
+            config_filename
+          )
         )
     exit(
-        'ERROR: Account named "{}" not found in {}'.format(
-            account_name, config_filename
-        )
+      'ERROR: Account named "{}" not found in {}'.format(
+        account_name, config_filename
+      )
     )
 
 
@@ -220,9 +220,9 @@ def get_account_by_id(account_id, config=None, config_filename="config.json"):
     # Else could not find account
     if account_id is None:
         exit(
-            "ERROR: Must specify an account, or set one in {} as a default".format(
-                config_filename
-            )
+          "ERROR: Must specify an account, or set one in {} as a default".format(
+            config_filename
+          )
         )
     exit('ERROR: Account ID "{}" not found in {}'.format(account_id, config_filename))
 
@@ -232,17 +232,17 @@ def parse_arguments(arguments, parser=None):
     if parser is None:
         parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--config", help="Config file name", default="config.json", type=str
+      "--config", help="Config file name", default="config.json", type=str
     )
     parser.add_argument(
-        "--accounts", help="Accounts to collect from", required=True, type=str
+      "--accounts", help="Accounts to collect from", required=True, type=str
     )
     parser.add_argument(
-        "--log_level",
-        help="Log level to record (DEBUG, INFO, WARN, ERROR)",
-        default="INFO",
-        required=False,
-        type=str,
+      "--log_level",
+      help="Log level to record (DEBUG, INFO, WARN, ERROR)",
+      default="INFO",
+      required=False,
+      type=str
     )
     args = parser.parse_args(arguments)
 
@@ -256,9 +256,9 @@ def parse_arguments(arguments, parser=None):
         exit('ERROR: Unable to load config file "{}"'.format(args.config))
     except ValueError as e:
         exit(
-            'ERROR: Config file "{}" could not be loaded ({}), see config.json.demo for an example'.format(
-                args.config, e
-            )
+          'ERROR: Config file "{}" could not be loaded ({}), see config.json.demo for an example'.format(
+            args.config, e
+          )
         )
 
     # Get accounts
@@ -284,7 +284,7 @@ def get_account_stats(account, all_resources=False):
 
     account = Account(None, account)
     log_debug(
-        "Collecting stats in account {} ({})".format(account.name, account.local_id)
+      "Collecting stats in account {} ({})".format(account.name, account.local_id)
     )
 
     stats = {}
@@ -311,13 +311,13 @@ def get_account_stats(account, all_resources=False):
             if resource["name"] == "S3 buckets":
                 if region.name == "us-east-1":
                     buckets = pyjq.all(
-                        ".Buckets[].Name",
-                        query_aws(region.account, "s3-list-buckets", region),
+                      ".Buckets[].Name",
+                      query_aws(region.account, "s3-list-buckets", region),
                     )
                     for bucket in buckets:
                         # Get the bucket's location
                         bucket_region = get_parameter_file(
-                            region, "s3", "get-bucket-location", bucket
+                          region, "s3", "get-bucket-location", bucket
                         )["LocationConstraint"]
 
                         # Convert the value to a name.
@@ -333,10 +333,10 @@ def get_account_stats(account, all_resources=False):
             else:
                 # Normal path
                 stats[resource["name"]][region.name] = sum(
-                    pyjq.all(
-                        resource["query"],
-                        query_aws(region.account, resource["source"], region),
-                    )
+                  pyjq.all(
+                    resource["query"],
+                    query_aws(region.account, resource["source"], region)
+                  )
                 )
 
     return stats
@@ -369,13 +369,13 @@ def get_collection_date(account):
         account = Account(None, account)
     account_struct = account
     json_blob = query_aws(
-        account_struct, "iam-get-credential-report", get_us_east_1(account_struct)
+      account_struct, "iam-get-credential-report", get_us_east_1(account_struct)
     )
     if not json_blob:
         raise InvalidAccountData(
-            "File iam-get-credential-report.json does not exist or is not well-formed. Likely cause is you did not run the collect command for account {}".format(
-                account.name
-            )
+          "File iam-get-credential-report.json does not exist or is not well-formed. Likely cause is you did not run the collect command for account {}".format(
+            account.name
+          )
         )
 
     # GeneratedTime looks like "2019-01-30T15:43:24+00:00"
@@ -386,16 +386,16 @@ def get_access_advisor_active_counts(account, max_age=90):
     region = get_us_east_1(account)
 
     json_account_auth_details = query_aws(
-        region.account, "iam-get-account-authorization-details", region
+      region.account, "iam-get-account-authorization-details", region
     )
 
     account_stats = {
-        "users": {"active": 0, "inactive": 0},
-        "roles": {"active": 0, "inactive": 0},
+      "users": {"active": 0, "inactive": 0},
+      "roles": {"active": 0, "inactive": 0}
     }
     for principal_auth in [
-        *json_account_auth_details["UserDetailList"],
-        *json_account_auth_details["RoleDetailList"],
+      *json_account_auth_details["UserDetailList"],
+      *json_account_auth_details["RoleDetailList"],
     ]:
         stats = {}
         stats["auth"] = principal_auth
@@ -405,16 +405,16 @@ def get_access_advisor_active_counts(account, max_age=90):
             principal_type = "users"
 
         job_details = get_parameter_file(
-            region,
-            "iam",
-            "generate-service-last-accessed-details",
-            principal_auth["Arn"],
+          region,
+          "iam",
+          "generate-service-last-accessed-details",
+          principal_auth["Arn"]
         )
         if job_details is None:
             print(
-                "Missing data for arn {} in {}".format(
-                    principal_auth["Arn"], account.name
-                )
+              "Missing data for arn {} in {}".format(
+                principal_auth["Arn"], account.name
+              )
             )
             continue
 
@@ -430,13 +430,13 @@ def get_access_advisor_active_counts(account, max_age=90):
         stats["is_inactive"] = True
 
         job_completion_date = datetime.datetime.strptime(
-            json_last_access_details["JobCompletionDate"][0:10], "%Y-%m-%d"
+          json_last_access_details["JobCompletionDate"][0:10], "%Y-%m-%d"
         )
 
         for service in json_last_access_details["ServicesLastAccessed"]:
             if "LastAuthenticated" in service:
                 last_access_date = datetime.datetime.strptime(
-                    service["LastAuthenticated"][0:10], "%Y-%m-%d"
+                  service["LastAuthenticated"][0:10], "%Y-%m-%d"
                 )
                 if (job_completion_date - last_access_date).days < max_age:
                     stats["is_inactive"] = False
