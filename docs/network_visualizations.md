@@ -7,7 +7,7 @@ The network visualization will only show VPC resources, ie. those things with a 
 ## Prepare the data
 
 This step converts the collected AWS data into a format that can be displayed in the browser by generating a `web/data.json` file.
-```
+```sh
 python cloudmapper.py prepare --account my_account
 ```
 
@@ -20,10 +20,10 @@ The most useful filtering options:
 * `--collapse-by-tag`: This is very useful to provide a tag name, and all nodes with that tag will be reduced to a single displayed node.
 
 The other filtering options are:
-* `--internal-edges` (default) and `--no-internal-edges`: When you only care about showing what is publicly accessible, use `--no-internal-edges`.
-* `--inter-rds-edges` and `--no-inter-rds-edges` (default): By default, any communication paths between RDS nodes are not shown, as this is unlikely to be of interest. To display them, use `--inter-rds-edges`.
-* `--read-replicas` (default) and `--no-read-replicas`: By default, RDS read replica nodes are shown. You can ignore them by using `--no-read-replicas`.
-* `--azs` (default) and `--no-azs`: Availability zones are shown by default.  To ignore them, use `--no-azs`.
+* `--no-internal-edges`: When you only care about showing what is publicly accessible, use `--no-internal-edges`.
+* `--inter-rds-edges`: By default, any communication paths between RDS nodes are not shown, as this is unlikely to be of interest. To display them, use `--inter-rds-edges`.
+* `--no-read-replicas`: By default, RDS read replica nodes are shown. You can ignore them by using `--no-read-replicas`.
+* `--no-azs`: Availability zones are shown by default.  To ignore them, use `--no-azs`.
 * `--no-collapse-asgs`: By default, auto-scaling groups are collapsed to a single node.  This flag causes all instances to be shown instead.
 
 
@@ -31,7 +31,7 @@ The other filtering options are:
 
 You can host the `web` directory with your webserver of choice, or just run:
 
-```
+```sh
 python cloudmapper.py webserver
 ```
 

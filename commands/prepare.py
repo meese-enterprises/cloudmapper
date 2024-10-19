@@ -720,12 +720,6 @@ def run(arguments):
         action="append",
     )
     parser.add_argument(
-        "--internal-edges",
-        help="Show all connections (default)",
-        dest="internal_edges",
-        action="store_true",
-    )
-    parser.add_argument(
         "--no-internal-edges",
         help="Only show connections to external CIDRs",
         dest="internal_edges",
@@ -738,28 +732,10 @@ def run(arguments):
         action="store_true",
     )
     parser.add_argument(
-        "--no-inter-rds-edges",
-        help="Do not show connections between RDS instances (default)",
-        dest="inter_rds_edges",
-        action="store_false",
-    )
-    parser.add_argument(
-        "--read-replicas",
-        help="Show RDS read replicas (default)",
-        dest="read_replicas",
-        action="store_true",
-    )
-    parser.add_argument(
         "--no-read-replicas",
         help="Do not show RDS read replicas",
         dest="read_replicas",
         action="store_false",
-    )
-    parser.add_argument(
-        "--azs",
-        help="Show availability zones (default)",
-        dest="azs",
-        action="store_true",
     )
     parser.add_argument(
         "--no-azs",
@@ -773,12 +749,6 @@ def run(arguments):
         dest="collapse_by_tag",
         default=None,
         type=str,
-    )
-    parser.add_argument(
-        "--collapse-asgs",
-        help="Show a single node for Auto Scaling Groups instead of all contained instances (default)",
-        dest="collapse_asgs",
-        action="store_true",
     )
     parser.add_argument(
         "--no-collapse-asgs",
